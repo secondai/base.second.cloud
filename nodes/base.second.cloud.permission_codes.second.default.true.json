@@ -1,0 +1,7 @@
+{
+  "type": "types.second.default.permissions",
+  "name": "base.second.cloud.permission_codes.second.default.true",
+  "data": {
+    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      // console.log('-- RUNNING PERMISSION CHECK --');\n      console.log('Running PermissionsCode', SELF._path);\n      \n      return resolve(true);\n      \n        \n        \n    }catch(err){\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
+  }
+}

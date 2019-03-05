@@ -1,0 +1,7 @@
+{
+  "type": "types.second.default.code.js",
+  "name": "base.second.cloud.app.second.blog.http_request",
+  "data": {
+    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      console.log('--App: --', PATH);\n      \n      // handle incoming request for an app (view, api)  \n      // - expecting express_obj \n      \n      let htmlNode, page;\n      \n      // get request session object (for finding if logged in using a cookie) \n      let {\n        req,\n        res \n      } = universe.requestsCache[universe.requestId];\n      \n      // TODO: Handle /view vs. /api requests \n      // - few standardized app endpoints: use /ai for discovery and recommendations \n      \n      htmlNode = await universe.getNodeAtPath(universe.navPathv1(SELF.name, 1, 'view_html'));\n      console.log('htmlNode:', htmlNode);\n      res.send(htmlNode.data.html);\n      \n      return resolve(true);\n        \n        \n    }catch(err){\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
+  }
+}

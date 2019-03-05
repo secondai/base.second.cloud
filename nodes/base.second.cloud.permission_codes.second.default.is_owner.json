@@ -1,0 +1,7 @@
+{
+  "type": "types.second.default.permissions",
+  "name": "base.second.cloud.permission_codes.second.default.is_owner",
+  "data": {
+    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      // console.log('-- RUNNING PERMISSION CHECK --');\n      console.log('Running PermissionsCode', SELF._path);\n      \n      // INPUT contains similar information as for the execService call \n      // - AUTH, PATH, \n      // console.log('Permissions Check INPUT:', INPUT);\n      \n      // INPUT = {\n      //   eventName,\n      //   serviceName,\n      //   actionPath,\n      //   authNode\n      // }\n      \n      let { \n        authNode\n      } = INPUT;\n      \n      // console.log('authNode:', JSON.stringify(authNode,null,2));\n      \n      try {\n        if(authNode.permissions.owner){\n          return resolve(true);\n        }\n      }catch(err){}\n      \n      try {\n        if(authNode.data.permissions.owner){\n          return resolve(true);\n        }\n      }catch(err){}\n      \n      try {\n        // token.data.isOwner \n        if(authNode.data.isOwner){\n          return resolve(true);\n        }\n      }catch(err){}\n      \n      return resolve(false);\n      \n        \n        \n    }catch(err){\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
+  }
+}

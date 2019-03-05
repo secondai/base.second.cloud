@@ -1,0 +1,7 @@
+{
+  "type": "types.second.default.react_component.js",
+  "name": "base.second.cloud.app.second.apps.frontend.data.react_components.main.apps_window",
+  "data": {
+    "code": "(()=>{\n  return new Promise(async (resolve,reject)=>{\n    try {\n      \n      class mycomponent extends React.Component {\n        constructor(props){\n          super(props);\n          \n          this.state = {}\n          \n        }\n        \n        render(){\n          \n          let LocalComponent = this.props.LocalComponent;\n          \n          return (\n            <LocalComponent.main />\n          )\n        }\n      }\n      \n      mycomponent = universe.ReactGlobalState(mycomponent);\n      mycomponent = universe.ReactHelpers(mycomponent);\n      \n      mycomponent = universe.sharedComponents.loadComponentsHoC(mycomponent, [\n        'data.react_components.main.apps_window.main'\n      ]);\n      \n      resolve({\n        type: 'types.second.default.react_component',\n        data: mycomponent\n      });\n      \n    }catch(err){\n      reject({\n        ERROR: true, \n        err: err.toString()\n      });\n    }\n    \n  })\n\n  \n})()"
+  }
+}
