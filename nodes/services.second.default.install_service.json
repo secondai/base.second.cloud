@@ -1,0 +1,7 @@
+{
+  "type": "types.second.default.service.js",
+  "name": "services.second.default.install_service",
+  "data": {
+    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      console.log('--service:', SELF._path, '--', PATH, AUTH);\n      \n      // This fetches a service (ie services.second.default.something) for installation \n      // - requires a URL \n      \n      // ...\n      \n      \n      return resolve();\n        \n        \n    }catch(err){\n      console.error('Error:', SELF._path, err);\n      resolve({\n        type: 'types.second.default.error',\n        data: {\n          message: err.toString()\n        }\n      });\n    }\n    \n    \n  })\n})()"
+  }
+}

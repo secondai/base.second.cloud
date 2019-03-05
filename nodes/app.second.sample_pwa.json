@@ -1,0 +1,7 @@
+{
+  "type": "types.second.default.app",
+  "name": "app.second.sample_pwa",
+  "data": {
+    "routes": {}
+  }
+}

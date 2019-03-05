@@ -1,0 +1,7 @@
+{
+  "type": "types.second.default.service_worker",
+  "name": "app.second.sample_pwa.service-worker",
+  "data": {
+    "script": "var dataCacheName = 'second-pwa';\nvar cacheName = 'second-pwa';\nvar filesToCache = [\n  '/app/app.second.sample_pwa',\n// \"./static\",\n \"./static/icon-128x128.png\",\n \"./static/icon-144x144.png\",\n \"./static/icon-152x152.png\",\n \"./static/icon-192x192.png\",\n \"./static/icon-256x256.png\",\n// \"./\",\n \"./manifest.json\",\n \"./service-worker.js\"\n];\n\nself.addEventListener('install', function(e) {\n  console.log('[ServiceWorker] Install');\n  e.waitUntil(\n    caches.open(cacheName).then(function(cache) {\n      console.log('[ServiceWorker] Caching app shell');\n      return cache.addAll(filesToCache);\n    })\n  );\n});\n\nself.addEventListener('activate', function(e) {\n  console.log('[ServiceWorker] Activate');\n  e.waitUntil(\n    caches.keys().then(function(keyList) {\n      return Promise.all(keyList.map(function(key) {\n        if (key !== cacheName && key !== dataCacheName) {\n          console.log('[ServiceWorker] Removing old cache', key);\n          return caches.delete(key);\n        }\n      }));\n    })\n  );\n  return self.clients.claim();\n});\n\nself.addEventListener('fetch', function(e) {\n  console.log('[Service Worker] Fetch', e.request.url);\n  e.respondWith(\n    caches.match(e.request).then(function(response) {\n      return response || fetch(e.request);\n    })\n  );\n});"
+  }
+}

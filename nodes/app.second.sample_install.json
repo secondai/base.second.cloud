@@ -1,0 +1,8 @@
+{
+  "type": "types.second.default.app",
+  "name": "app.second.sample_install",
+  "data": {
+    "routes": {},
+    "installed_from": null
+  }
+}

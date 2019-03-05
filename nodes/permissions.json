@@ -1,0 +1,23 @@
+{
+  "type": "types.second.default.permissions",
+  "name": "permissions",
+  "data": {
+    "description": "root permissions for doing anything on anything",
+    "permissions": [
+      {
+        "code": "permission_codes.second.default.is_owner",
+        "vars": {},
+        "events": [
+          "pre"
+        ],
+        "output": {
+          "true": "allow"
+        },
+        "services": [
+          "services.**",
+          "!services.second.default.auth"
+        ]
+      }
+    ]
+  }
+}
