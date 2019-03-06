@@ -1,0 +1,13 @@
+{
+  "type": "types.second.default.route",
+  "name": "data.second.default.routes.api_put",
+  "data": {
+    "auth": {
+      "loggedin": true
+    },
+    "routes": [
+      "/api/put"
+    ],
+    "priority": 1
+  }
+}

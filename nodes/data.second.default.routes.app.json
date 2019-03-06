@@ -1,0 +1,16 @@
+{
+  "type": "types.second.default.route",
+  "name": "data.second.default.routes.app",
+  "data": {
+    "auth": {
+      "loggedin": true,
+      "anonymous": false
+    },
+    "routes": [
+      "/app",
+      "/app/*apppath",
+      "/app/*apppath/*any"
+    ],
+    "priority": 5
+  }
+}

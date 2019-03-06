@@ -1,0 +1,12 @@
+{
+  "type": "types.second.default.route",
+  "name": "data.second.default.routes.app_frontend",
+  "data": {
+    "routes": [
+      "/app_frontend",
+      "/app_frontend/*apppath",
+      "/app_frontend/*apppath/*any"
+    ],
+    "priority": 5
+  }
+}

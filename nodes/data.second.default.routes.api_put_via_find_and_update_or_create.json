@@ -1,0 +1,13 @@
+{
+  "type": "types.second.default.route",
+  "name": "data.second.default.routes.api_put_via_find_and_update_or_create",
+  "data": {
+    "auth": {
+      "loggedin": true
+    },
+    "routes": [
+      "/api/put_via_find_and_update_or_create"
+    ],
+    "priority": 1
+  }
+}

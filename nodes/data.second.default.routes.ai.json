@@ -1,0 +1,14 @@
+{
+  "type": "types.second.default.route",
+  "name": "data.second.default.routes.ai",
+  "data": {
+    "auth": {
+      "loggedin": true,
+      "anonymous": true
+    },
+    "routes": [
+      "/ai"
+    ],
+    "priority": 1
+  }
+}

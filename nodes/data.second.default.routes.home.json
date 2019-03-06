@@ -1,0 +1,14 @@
+{
+  "type": "types.second.default.route",
+  "name": "data.second.default.routes.home",
+  "data": {
+    "auth": {
+      "loggedin": true,
+      "anonymous": true
+    },
+    "routes": [
+      "/"
+    ],
+    "priority": 5
+  }
+}

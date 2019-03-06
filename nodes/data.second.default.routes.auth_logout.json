@@ -1,0 +1,15 @@
+{
+  "type": "types.second.default.route",
+  "name": "data.second.default.routes.auth_logout",
+  "data": {
+    "auth": {
+      "loggedin": true,
+      "anonymous": true
+    },
+    "routes": [
+      "/logout",
+      "/auth/logout"
+    ],
+    "priority": 1
+  }
+}
