@@ -1,7 +1,0 @@
-{
-  "type": "types.second.default.app",
-  "name": "app.second.sample_auth",
-  "data": {
-    "routes": {}
-  }
-}
