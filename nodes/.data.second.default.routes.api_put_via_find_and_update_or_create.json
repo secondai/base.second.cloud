@@ -1,0 +1,17 @@
+{
+  "name": "base.second.cloud.data.second.default.routes.api_put_via_find_and_update_or_create",
+  "type": "types.second.default.route",
+  "data": {
+    "auth": {
+      "loggedin": true
+    },
+    "routes": [
+      "/api/put_via_find_and_update_or_create"
+    ],
+    "priority": 1
+  },
+  "blobdata": null,
+  "createdAt": "2019-03-05T22:38:12.740Z",
+  "updatedAt": "2019-03-16T02:18:53.584Z",
+  "nodes": []
+}

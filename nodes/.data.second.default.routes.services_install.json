@@ -1,0 +1,19 @@
+{
+  "name": "base.second.cloud.data.second.default.routes.services_install",
+  "type": "types.second.default.route",
+  "data": {
+    "auth": {
+      "loggedin": true,
+      "anonymous": false
+    },
+    "routes": [
+      "/services/install",
+      "/services/install/*any"
+    ],
+    "priority": 5
+  },
+  "blobdata": null,
+  "createdAt": "2019-03-05T22:38:16.834Z",
+  "updatedAt": "2019-03-16T02:18:54.143Z",
+  "nodes": []
+}

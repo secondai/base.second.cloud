@@ -1,0 +1,18 @@
+{
+  "name": "base.second.cloud.data.second.default.routes.api_tmplink",
+  "type": "types.second.default.route",
+  "data": {
+    "auth": {
+      "loggedin": true,
+      "anonymous": true
+    },
+    "routes": [
+      "/api/tmplink/*all"
+    ],
+    "priority": 1
+  },
+  "blobdata": null,
+  "createdAt": "2019-03-16T02:18:54.445Z",
+  "updatedAt": "2019-03-16T02:18:54.445Z",
+  "nodes": []
+}
