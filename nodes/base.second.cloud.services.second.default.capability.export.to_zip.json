@@ -1,0 +1,27 @@
+{
+  "name": "base.second.cloud.services.second.default.capability.export.to_zip",
+  "type": "types.second.default.service.js",
+  "data": {
+    "src": {
+      "self": {
+        "src": {
+          "targetDir": "self"
+        },
+        "build": {
+          "vars": {},
+          "image": "dbuilder_1552592815974",
+          "command": "npm run second:build:self",
+          "lastBuilt": "2019-03-16T02:49:28.973Z",
+          "dockerfile": "dockerfile.second",
+          "dependenciesCommand": "npm run second:dependencies:self"
+        }
+      }
+    },
+    "exec": "/self/src/second.input.js",
+    "vars": {}
+  },
+  "blobdata": null,
+  "createdAt": "2019-03-16T02:18:32.250Z",
+  "updatedAt": "2019-03-16T03:41:22.535Z",
+  "nodes": []
+}

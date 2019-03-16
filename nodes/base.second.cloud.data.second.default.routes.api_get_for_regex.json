@@ -1,0 +1,17 @@
+{
+  "name": "base.second.cloud.data.second.default.routes.api_get_for_regex",
+  "type": "types.second.default.route",
+  "data": {
+    "auth": {
+      "loggedin": true
+    },
+    "routes": [
+      "/api/get_for_regex"
+    ],
+    "priority": 1
+  },
+  "blobdata": null,
+  "createdAt": "2019-03-05T22:38:16.093Z",
+  "updatedAt": "2019-03-16T02:18:54.079Z",
+  "nodes": []
+}

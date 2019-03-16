@@ -1,0 +1,46 @@
+{
+  "name": "base.second.cloud.app.second.sample_pwa",
+  "type": "types.second.default.app",
+  "data": {
+    "src": {
+      "self": {
+        "src": {
+          "repo": "https://github.com/secondai/xyz",
+          "repoDir": "",
+          "targetDir": "/"
+        },
+        "build": {
+          "vars": {},
+          "command": "npm run second:build:self",
+          "dockerfile": "dockerfile.second"
+        }
+      },
+      "frontend": {
+        "src": {
+          "repo2": "https://github.com/secondai/second_template_pwa",
+          "zipUrl": "https://github.com/secondai/second_template_pwa/archive/master.zip",
+          "repoDir": "",
+          "targetDir": "/"
+        },
+        "build": {
+          "vars": {},
+          "image": "dbuilder_1552281390113",
+          "command": "npm run second:build:self",
+          "dockerfile": "dockerfile.second"
+        }
+      }
+    },
+    "exec": "/self/dist/second.input.js",
+    "routes": {},
+    "_frontendDevProxy": null,
+    "frontendSandboxUrl": null,
+    "frontendSandboxZipUrl": null,
+    "frontendBuildDataZipUrl": "https://github.com/secondai/second_template_pwa/archive/master.zip",
+    "frontendStaticFileDirectory": "/build",
+    "frontendBuildDataZipUrl_GITHUB": "https://github.com/secondai/second_template_pwa/archive/master.zip"
+  },
+  "blobdata": null,
+  "createdAt": "2019-03-16T02:16:29.023Z",
+  "updatedAt": "2019-03-16T02:16:29.023Z",
+  "nodes": []
+}

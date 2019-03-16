@@ -1,0 +1,27 @@
+{
+  "name": "base.second.cloud.permissions.services.second.default",
+  "type": "types.second.default.permissions",
+  "data": {
+    "description": "root permissions for doing anything on anything",
+    "permissions": [
+      {
+        "code": "permission_codes.second.default.is_owner",
+        "vars": {},
+        "events": [
+          "pre"
+        ],
+        "output": {
+          "true": "allow"
+        },
+        "services": [
+          "services.**",
+          "!services.second.default.auth"
+        ]
+      }
+    ]
+  },
+  "blobdata": null,
+  "createdAt": "2019-03-05T06:27:15.704Z",
+  "updatedAt": "2019-03-05T06:27:15.704Z",
+  "nodes": []
+}
