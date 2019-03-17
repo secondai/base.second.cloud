@@ -120,8 +120,8 @@ const inputFunc = async function({universe, SELF, INPUT, PATH}){
 
           // zip.addLocalFile(internalFilePath, 'files/' + match); // broken, adds files as folders
           let fileBuffer = fs.readFileSync(internalFilePath);
-          zip.addFile('nodes/' + match, fileBuffer, '', parseInt('0644', 16));
-          console.log('addFile:', internalFilePath, 'files/' + match);
+          zip.addFile('nodes/' + nodePath + '/' + match, fileBuffer, '', parseInt('0644', 16));
+          console.log('addFile:', internalFilePath, 'files/' + nodePath + '/' + match);
           addedFiles = true;
           // let fileData = fs.readFileSync(internalFilePath);
           // fileData = fileData.toString('base64');

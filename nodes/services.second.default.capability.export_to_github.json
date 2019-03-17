@@ -9,10 +9,23 @@
         },
         "build": {
           "vars": {},
-          "image": "dbuilder_1552592815974",
+          "image": "nickreed/second-builder-default:latest",
           "command": "npm run second:build:self",
-          "lastBuilt": "2019-03-16T03:00:37.121Z",
-          "dockerfile": "dockerfile.second",
+          "lastBuiltCode": "2019-03-17T21:46:30.770Z",
+          "buildOnInstall": true,
+          "dependenciesCommand": "npm run second:dependencies:self"
+        }
+      },
+      "self2": {
+        "src": {
+          "targetDir": "self2"
+        },
+        "build": {
+          "vars": {},
+          "image": "nickreed/second-builder-default:latest",
+          "command": "npm run second:build:self",
+          "lastBuiltCode": "2019-03-17T21:46:36.722Z",
+          "buildOnInstall": true,
           "dependenciesCommand": "npm run second:dependencies:self"
         }
       }
@@ -22,6 +35,6 @@
   },
   "blobdata": null,
   "createdAt": "2019-03-16T02:18:32.048Z",
-  "updatedAt": "2019-03-16T03:41:22.291Z",
+  "updatedAt": "2019-03-17T21:50:11.550Z",
   "nodes": []
 }

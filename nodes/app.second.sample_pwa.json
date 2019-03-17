@@ -2,17 +2,21 @@
   "name": "base.second.cloud.app.second.sample_pwa",
   "type": "types.second.default.app",
   "data": {
-    "src": {
+    "exec": "/self/dist/second.input.js",
+    "src2": {
       "self": {
         "src": {
-          "repo": "https://github.com/secondai/xyz",
+          "repo2": "https://github.com/secondai/xyz",
+          "zipUrl": "https://github.com/secondai/second_template_pwa/archive/master.zip",
           "repoDir": "",
-          "targetDir": "/"
+          "targetDir": "self"
         },
         "build": {
           "vars": {},
+          "image": "nickreed/second-builder-default:latest",
           "command": "npm run second:build:self",
-          "dockerfile": "dockerfile.second"
+          "buildOnInstall": true,
+          "dependenciesCommand": "npm run second:dependencies:self"
         }
       },
       "frontend": {
@@ -20,27 +24,29 @@
           "repo2": "https://github.com/secondai/second_template_pwa",
           "zipUrl": "https://github.com/secondai/second_template_pwa/archive/master.zip",
           "repoDir": "",
-          "targetDir": "/"
+          "targetDir": "frontend"
         },
         "build": {
           "vars": {},
-          "image": "dbuilder_1552281390113",
+          "image": "nickreed/second-builder-default:latest",
           "command": "npm run second:build:self",
-          "dockerfile": "dockerfile.second"
+          "buildOnInstall": true,
+          "dependenciesCommand": "npm run second:dependencies:self"
         }
       }
     },
-    "exec": "/self/dist/second.input.js",
-    "routes": {},
-    "_frontendDevProxy": null,
-    "frontendSandboxUrl": null,
-    "frontendSandboxZipUrl": null,
-    "frontendBuildDataZipUrl": "https://github.com/secondai/second_template_pwa/archive/master.zip",
-    "frontendStaticFileDirectory": "/build",
-    "frontendBuildDataZipUrl_GITHUB": "https://github.com/secondai/second_template_pwa/archive/master.zip"
+    "vars": {
+      "_frontendDevProxy": null,
+      "frontendSandboxUrl": null,
+      "frontendSandboxZipUrl": null,
+      "frontendBuildDataZipUrl": "https://github.com/secondai/second_template_pwa/archive/master.zip",
+      "frontendStaticFileDirectory": "/frontend/build",
+      "frontendBuildDataZipUrl_GITHUB": "https://github.com/secondai/second_template_pwa/archive/master.zip"
+    },
+    "routes": {}
   },
   "blobdata": null,
   "createdAt": "2019-03-16T02:16:29.023Z",
-  "updatedAt": "2019-03-16T09:39:45.606Z",
+  "updatedAt": "2019-03-17T21:50:28.167Z",
   "nodes": []
 }
