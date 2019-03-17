@@ -2,8 +2,7 @@
   "name": "base.second.cloud.app.second.sample_install",
   "type": "types.second.default.app",
   "data": {
-    "exec": "/self/dist/second.input.js",
-    "src2": {
+    "src": {
       "self": {
         "src": {
           "repo2": "https://github.com/secondai/xyz",
@@ -15,6 +14,7 @@
           "vars": {},
           "image": "nickreed/second-builder-default:latest",
           "command": "npm run second:build:self",
+          "lastBuiltCode": "2019-03-17T22:14:18.346Z",
           "buildOnInstall": true,
           "dependenciesCommand": "npm run second:dependencies:self"
         }
@@ -30,11 +30,13 @@
           "vars": {},
           "image": "nickreed/second-builder-default:latest",
           "command": "npm run second:build:self",
+          "lastBuiltCode": "2019-03-17T22:15:25.767Z",
           "buildOnInstall": true,
           "dependenciesCommand": "npm run second:dependencies:self"
         }
       }
     },
+    "exec": "/self/src/second.input.js",
     "vars": {
       "_frontendDevProxy": null,
       "frontendSandboxUrl": null,
@@ -47,6 +49,6 @@
   },
   "blobdata": null,
   "createdAt": "2019-03-16T01:59:49.443Z",
-  "updatedAt": "2019-03-17T21:50:27.678Z",
+  "updatedAt": "2019-03-17T22:24:30.583Z",
   "nodes": []
 }
