@@ -1,0 +1,45 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "/app/app.second.setup",
+  "dependencies": {
+    "buffer": "5.2.1",
+    "bulma": "0.7.4",
+    "crypto": "1.0.1",
+    "dirty-json": "0.7.0",
+    "ipfs-unixfs": "0.1.16",
+    "ipld-dag-pb": "0.15.3",
+    "js-sha256": "0.9.0",
+    "moment": "2.24.0",
+    "node-sass-chokidar": "1.3.4",
+    "pwa-icon-generator": "1.0.3",
+    "react": "^16.8.4",
+    "react-art": "16.8.4",
+    "react-dom": "^16.8.4",
+    "react-helmet": "5.2.0",
+    "react-native-web": "0.11.1",
+    "react-scripts": "2.1.8",
+    "stellar-sdk": "0.15.0"
+  },
+  "scripts": {
+    "build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/",
+    "icons": "./node_modules/.bin/generate-icons -c ffffff --icon src/media/icon.png --output public/img/icons/",
+    "second:build:self": "npm run build-css && react-scripts build",
+    "second:build-dev:self": "NODE_ENV=development react-scripts build",
+    "second:dependencies:self": "yarn",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}
