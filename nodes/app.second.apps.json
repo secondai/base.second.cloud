@@ -2,11 +2,42 @@
   "name": "base.second.cloud.app.second.apps",
   "type": "types.second.default.app",
   "data": {
-    "routes": {},
-    "installed_from": null
+    "src": {
+      "self": {
+        "src": {
+          "targetDir": "self"
+        },
+        "build": {
+          "vars": {},
+          "image": "nickreed/second-builder-default:latest",
+          "command": "npm run second:build:self",
+          "lastBuiltCode": "2019-03-18T21:58:44.079Z",
+          "buildOnInstall": true,
+          "dependenciesCommand": "npm run second:dependencies:self"
+        }
+      },
+      "frontend": {
+        "src": {
+          "targetDir": "frontend"
+        },
+        "build": {
+          "vars": {},
+          "image": "nickreed/second-builder-default:latest",
+          "command": "npm run second:build:self",
+          "lastBuiltCode": "2019-03-19T04:50:43.674Z",
+          "buildOnInstall": true,
+          "dependenciesCommand": "npm run second:dependencies:self"
+        }
+      }
+    },
+    "exec": "/self/src/second.input.js",
+    "vars": {
+      "frontendStaticFileDirectory": "frontend/build"
+    },
+    "routes": {}
   },
   "blobdata": null,
   "createdAt": "2019-03-05T06:43:12.674Z",
-  "updatedAt": "2019-03-17T22:24:29.793Z",
+  "updatedAt": "2019-03-19T18:42:17.197Z",
   "nodes": []
 }
