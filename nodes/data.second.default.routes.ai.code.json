@@ -5,7 +5,7 @@
     "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      console.log('--incoming_route_handler: /ai--');\n      \n      // Basically running execService with the incoming authObj \n      // - convert incoming/external authObj (with a token) to an internal authObj (with permissions) \n      \n      // expecting INPUT \n      \n      let inputNode = INPUT.data.req.body;\n      \n  \t\t// run execService \n\t\t\tlet resultNode = await universe.execService('services.second.default.input', {\n\t\t\t  actionPath: 'builtin.input',\n\t\t\t  inputNode,\n\t\t\t\tauthNode: {}, // TODO: use new node \n\t\t\t\tisOwner: true // overwrites authNode? \n\t\t\t});\n\t\t\t\n      await universe.httpResponse('send', resultNode);\n      \n      return resolve(true);\n        \n        \n    }catch(err){\n      console.error('Error:', SELF._path, err);\n      resolve({\n        type: 'types.second.default.error',\n        data: {\n          message: err.toString()\n        }\n      });\n    }\n    \n    \n  })\n})()"
   },
   "blobdata": null,
-  "createdAt": "2019-03-05T22:38:11.588Z",
-  "updatedAt": "2019-03-19T18:42:29.990Z",
+  "createdAt": "2019-03-20T23:53:07.687Z",
+  "updatedAt": "2019-03-20T23:53:07.687Z",
   "nodes": []
 }

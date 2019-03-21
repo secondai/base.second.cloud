@@ -5,7 +5,7 @@
     "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      // TODO: ensure not already running? \n      // - universe.sharedServices? \n      \n      // Setup the Express HTTP Server for handling input \n      console.log('Setting up IPFS watcher/connection');\n      \n      let doneCanWipe;\n      universe.wipeFunc = new Promise(resolve=>{\n        doneCanWipe = resolve;\n      });\n      \n      // universe.sharedServices.httpServer = server;\n      \n      return resolve({\n        type: 'boolean:Qmsdflkj',\n        data: true\n      });\n        \n    }catch(err){\n      console.error('err setting up express server:', err);\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
   },
   "blobdata": null,
-  "createdAt": "2019-03-06T00:08:08.697Z",
-  "updatedAt": "2019-03-19T18:42:45.371Z",
+  "createdAt": "2019-03-20T23:53:25.169Z",
+  "updatedAt": "2019-03-20T23:53:25.169Z",
   "nodes": []
 }

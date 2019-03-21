@@ -5,7 +5,7 @@
     "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n    \n      console.log('--service:', SELF.name, '--', PATH, AUTH);\n      \n      // console.log('INPUT:', INPUT); \n      \n      // PATH variable is the path we're executing against! \n      // - permissions already should have handled the \"pre\"\n      // - after fetching data, run the \"post\" checkPermissions event  \n      \n      // INPUT.type == types.second.default.service_nodes_for_path_pattern_with_options\n      // INPUT.data == { pattern: String, opts: {includeChildren: true, excludeData: false} } \n      \n      // TODO: handle a missing node? \n      // - return null? \n      let result = await universe.getNodesForPathPattern(INPUT.data.pattern, INPUT.data.opts);\n      \n      let returnResult;\n      let nodeResult;\n      \n      if(result){\n        returnResult = {\n          type: 'types.second.default.node.internal',\n          data: universe.lodash.pick(result,[\n            'name',\n            'type',\n            'data',\n            'createdAt',\n            'updatedAt'\n          ])\n        }\n      } else {\n        returnResult = {\n          type: 'types.second.default.null',\n          data: null\n        }\n      }\n      \n      return resolve(returnResult);\n        \n    }catch(err){\n      console.error('Error:', SELF._path, err);\n      resolve({\n        type: 'types.second.default.error',\n        data: {\n          message: err.toString()\n        }\n      });\n    }\n    \n    \n  })\n})()"
   },
   "blobdata": null,
-  "createdAt": "2019-03-05T06:16:16.315Z",
-  "updatedAt": "2019-03-19T18:42:45.512Z",
+  "createdAt": "2019-03-20T23:53:26.294Z",
+  "updatedAt": "2019-03-20T23:53:26.294Z",
   "nodes": []
 }

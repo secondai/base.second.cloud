@@ -1687,5 +1687,4 @@ class Home extends Component {
  
 Home = GlobalState(Home);
 
-
 export default Home;

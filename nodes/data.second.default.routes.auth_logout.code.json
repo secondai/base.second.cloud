@@ -5,7 +5,7 @@
     "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      console.log('--incoming_route_handler: /auth/logout --');\n      \n      // processes login submission \n      // - expecting ajax response \n      \n      let {\n        req,\n        res\n      } = universe.requestsCache[universe.requestId];\n      \n      req.session.loggedin = false;\n      \n      res.send(true);\n      return resolve(true);\n        \n    }catch(err){\n      console.error('Error:', SELF._path, err);\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
   },
   "blobdata": null,
-  "createdAt": "2019-03-05T22:38:15.143Z",
-  "updatedAt": "2019-03-19T18:42:30.185Z",
+  "createdAt": "2019-03-20T23:53:13.960Z",
+  "updatedAt": "2019-03-20T23:53:13.960Z",
   "nodes": []
 }

@@ -5,7 +5,7 @@
     "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      console.log('--API tmplink (for a PATH): --', SELF.name);\n      \n      const util = universe.require('util');\n      const path = universe.require('path');\n      let fs = universe.require('fs-extra');\n      let del = universe.require('del'); // delete file afterwards \n      \n      \n      \n      // This is just temporary! \n      let {\n        req,\n        res\n      } = INPUT.data;\n      \n      let linkToken;\n      let linkObj;\n      \n      try {\n        linkToken = req.originalUrl.split('/').slice(3)[0];\n        console.log('linkToken:', linkToken);\n        \n        linkObj = universe.globalCache.tmpLinks[linkToken]\n        console.log('linkObj:', linkObj);\n        if(!linkObj){\n          throw \"no linkObj\"\n        }\n      }catch(err){\n        // not exists \n        console.error('Failed linkToken or linkObj:', err);\n        res.status(404).send(false);\n        return resolve(false);\n      }\n      \n      let internalFilePath = linkObj.data.internalFilePath;\n      \n      if(linkObj.data.triesAllowed){\n        linkObj.data.triesAllowed--;\n      }\n      \n      if(!linkObj.data.triesAllowed){\n        // delete after sending?\n        // - TODO \n      }\n      \n      res.download(internalFilePath); // uses res.sendFile\n      \n      return resolve(true);\n        \n        \n    }catch(err){\n      universe.scriptError(err, SELF);\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
   },
   "blobdata": null,
-  "createdAt": "2019-03-16T02:18:54.516Z",
-  "updatedAt": "2019-03-19T18:42:30.543Z",
+  "createdAt": "2019-03-20T23:53:10.835Z",
+  "updatedAt": "2019-03-20T23:53:10.835Z",
   "nodes": []
 }

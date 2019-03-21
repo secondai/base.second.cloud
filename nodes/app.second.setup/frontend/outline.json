@@ -1,0 +1,29 @@
+{
+	"name" : "./layout",
+	"vars" : {
+		"childComponents":[{
+			"name" : "./left-right",
+			"name2" : "second-component-react-left-right",
+			"vars" : {
+				"leftComponent":{
+					"name" : "./basic-text",
+					"vars" : {
+						"text": "this is the left"
+					}
+				},
+				"rightComponent":{
+					"name" : "./basic-text",
+					"vars" : {
+						"text": "this is the right"
+					}
+				}
+			}
+		},{
+			"name" : "./basic-text",
+			"vars" : {
+				"text": "this is the below"
+			}
+		}],
+		"title":"Page Title Here"
+	}
+}
