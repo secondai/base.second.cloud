@@ -5,6 +5,7 @@
   "homepage": "/app/app.second.apps",
   "dependencies": {
     "bulma": "0.7.4",
+    "inobounce": "^0.1.6",
     "node-sass-chokidar": "1.3.4",
     "pwa-icon-generator": "1.0.3",
     "react": "^16.8.4",
@@ -12,12 +13,16 @@
     "react-dom": "^16.8.4",
     "react-helmet": "5.2.0",
     "react-native-web": "0.11.1",
-    "react-scripts": "2.1.8"
+    "react-scripts": "2.1.8",
+    "second-cli": "^1.0.5",
+    "second-component-react-left-right": "^1.0.2",
+    "second-fe-react-hoc-globalstate": "^1.0.0"
   },
   "scripts": {
     "build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/",
     "icons": "./node_modules/.bin/generate-icons -c ffffff --icon src/media/icon.png --output public/img/icons/",
-    "second:build:self": "npm run build-css && react-scripts build",
+    "second:build:self": "react-scripts build",
+    "second:build-fromoutline:self": "./node_modules/.bin/second-cli build-frontend . ",
     "second:build-dev:self": "NODE_ENV=development react-scripts build",
     "second:dependencies:self": "yarn",
     "start": "react-scripts start",

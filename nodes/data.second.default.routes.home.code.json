@@ -5,7 +5,7 @@
     "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      console.log('--incoming_route_handler: Home--');\n    \n      let page = `\n        <!DOCTYPE html>\n        <html>\n          <head>\n            <meta charset=\"utf-8\">\n            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n            <title>Home</title>\n          </head>\n          <body>\n            Home\n          </body>\n        </html>\n      `;\n\n      await universe.httpResponse('send', page);\n      \n      return resolve(true);\n        \n        \n    }catch(err){\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
   },
   "blobdata": null,
-  "createdAt": "2019-03-20T23:53:14.107Z",
-  "updatedAt": "2019-03-20T23:53:14.107Z",
+  "createdAt": "2019-03-27T08:23:11.888Z",
+  "updatedAt": "2019-03-27T08:23:11.888Z",
   "nodes": []
 }

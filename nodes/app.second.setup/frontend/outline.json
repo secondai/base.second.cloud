@@ -2,8 +2,8 @@
 	"name" : "./layout",
 	"vars" : {
 		"childComponents":[{
-			"name" : "./left-right",
-			"name2" : "second-component-react-left-right",
+			"name_local" : "./left-right",
+			"name" : "second-component-react-left-right",
 			"vars" : {
 				"leftComponent":{
 					"name" : "./basic-text",
@@ -13,6 +13,7 @@
 				},
 				"rightComponent":{
 					"name" : "./basic-text",
+					"name2" : "./basic-text",
 					"vars" : {
 						"text": "this is the right"
 					}

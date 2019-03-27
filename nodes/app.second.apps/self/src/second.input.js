@@ -56,7 +56,7 @@ const inputFunc = async function({universe, SELF, INPUT}){
   
   // get url relative to myself 
   // let appPath = universe.navPathv1(SELF.name, 1)
-  console.log('appLookupPath:', finalVolumeLookupPath, appLookupPath, req.originalUrl, appPath);
+  console.log('404 in app:', finalVolumeLookupPath, appLookupPath, req.originalUrl, appPath);
 
   res.send('Missing, 404d');
   return;

@@ -1,0 +1,16 @@
+{
+  "name": "auth_login",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "second:dependencies:self": "yarn",
+    "second:build:self": "echo 'built'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "7.0.1"
+  }
+}

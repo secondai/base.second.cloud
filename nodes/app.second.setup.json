@@ -24,7 +24,7 @@
           "vars": {},
           "image": "nickreed/second-builder-default:latest",
           "command": "npm run second:build:self",
-          "lastBuiltCode": "2019-03-20T05:17:16.206Z",
+          "lastBuiltCode": "2019-03-21T06:40:00.886Z",
           "buildOnInstall": false,
           "dependenciesCommand": "npm run second:dependencies:self"
         }
@@ -38,6 +38,6 @@
   },
   "blobdata": null,
   "createdAt": "2019-03-21T00:02:44.667Z",
-  "updatedAt": "2019-03-21T00:02:44.667Z",
+  "updatedAt": "2019-03-27T08:23:29.293Z",
   "nodes": []
 }

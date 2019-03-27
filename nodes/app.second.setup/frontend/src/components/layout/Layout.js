@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import {Helmet} from "react-helmet";
 
-import GlobalState from 'components/hoc/globalstate/GlobalState';
+import GlobalState from 'second-fe-react-hoc-globalstate';
 
 class Layout extends Component {
   static propTypes = {
@@ -19,12 +19,14 @@ class Layout extends Component {
   }
   
   render(){
-    
+    console.log('Layout props:', this.props);
     return (
       <div className="">
 
         <Helmet>
           <title>{this.props.title}</title>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css" />
+          <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
         </Helmet>
 
         <div>
