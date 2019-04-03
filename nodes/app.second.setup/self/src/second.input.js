@@ -54,13 +54,25 @@ const inputFunc = async function({universe, SELF, INPUT}){
     return true;
   }
   
+  
   // get url relative to myself 
   // let appPath = universe.navPathv1(SELF.name, 1)
-  console.log('appLookupPath:', finalVolumeLookupPath, appLookupPath, req.originalUrl, appPath);
+  console.log('404 in app:', finalVolumeLookupPath, appLookupPath, req.originalUrl, appPath);
+
+  // Missing
+  // - return index 
+  volumeLookupPath = path.join(staticRootPath, 'index.html');
+  finalVolumeLookupPath = path.resolve(volumeLookupPath);
+  exists = fs.existsSync(finalVolumeLookupPath);
+  if(exists){
+    console.log('Returning index.html for app',finalVolumeLookupPath);
+    res.sendFile(finalVolumeLookupPath);
+    return true;
+  }
 
   res.send('Missing, 404d');
-  return;
 
+  return;
  }
 
 

@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import './Home.css';
+// import './Home.css';
 
-import moment from 'moment';
 // for multihashing 
 import {default as Unixfs} from 'ipfs-unixfs'
 import {DAGNode} from 'ipld-dag-pb'
@@ -11,12 +10,16 @@ import GlobalState from 'second-fe-react-hoc-globalstate';
 
 // import Create from 'create/Create'
 
+var keypair = require('keypair');
 
-const dirtyJSON = require('dirty-json');
+const { URL } = require('url');
+
 const StellarSdk = require('stellar-sdk');
 const crypto = require('crypto');
 const jsSHA256 = require('js-sha256');
 const Buffer = require('buffer/').Buffer; // trailing slash is important! 
+
+let fundingBalance = '5.0';
 
 class MultiHash {
   static getMultiHash(buffer) {
@@ -135,186 +138,425 @@ function decryptToString(text, password){
 }
 
 
+function getStellarServer(network){
+  
+  network = network || 'test';
+  
+  /// setup stellar connection 
+  let horizonPossible = {
+    public: {
+      name: 'PubNet',
+      address: 'https://horizon.stellar.org',
+      network: 'public'
+    },
+    test: {
+      name: 'TestNet',
+      address: 'https://horizon-testnet.stellar.org',
+      network: 'test'
+    }
+  };
+
+  let stellarInfo = horizonPossible[network];
+  switch(stellarInfo.network){
+    case 'public':
+      StellarSdk.Network.usePublicNetwork();
+      break;
+    case 'test':
+      StellarSdk.Network.useTestNetwork();
+      break;
+    default:
+      break;
+  }
+  
+  window.lastStellarInfo = stellarInfo;
+  let stellarServer = new StellarSdk.Server(stellarInfo.address);
+  return stellarServer;
+  
+}
+
 class Home extends Component {
   constructor(props){
     super(props);
     
-    // let thisIpfs = window.existingIpfs;
-    // if(!thisIpfs){
-    //   thisIpfs = new window.Ipfs();
-    //   window.existingIpfs = thisIpfs;
-    // }
-    
-    let routeProtocol = this.props.state.UsernamePassphraseNode.data.network == 'test' ? 'test://':''
-    
-    let routeHost = routeProtocol + this.props.state.UsernamePassphraseNode.data.username;
-    
     this.state = {
-      // stellarKey: '',
-      // routeText: 'id://nick/test1',
-      stellarKey: this.props.state.UsernamePassphraseNode.data.passphrase, 
-      defaultRouteHost: routeHost,
-      routeHost, // omits trailing '/' if routeText is empty
-      sendMessageHost: routeHost,
-      routeText: '', // should default to "/" or be in routeHost?
-      isSearching: false,
-      dataValue: '',
-      canParse: true,
-      isSaving: false,
-      usernameClaimable: false,
-      usernameOwnedByMe: true,
-      
-      tabsMainPossible: [
-        ['route','Routes'], 
-        ['send_message','Send Message'],
-        ['receive_messages','Receive Messages']
-      ],
-      tabsMainSelected: 'route', 
-      
-      msgValue: '',
-      outgoingMessages: [],
-      
-      fromRouteHost: this.props.state.UsernamePassphraseNode.data.passphrase, 
-      toRouteHost: routeProtocol,
-      transferAmount: '0.0',
-      
-      gettingBalance: [false,false],
-      balanceOf: [null,null],
-      
-      connectedColor: 'yellow',
-      
-      routesRemaining: 7 // TODO: calculate from stellar balance! 
+      username: '', // will be normalized
+      stellarSeed: '',
+      statusMsg: '',
+      claimingUsername: false,
+      purchaseInfo: null
     }
+    
+    this.usernameCheck = 0;
     
   }
   
   componentDidMount(){
-    
-    console.log('Loaded interface', this);
-    
-    this.startup();
-    
-  }
-  
-  startup = async () => {
-    
-    this.updateRouteFullPath();
-    
-    this.checkIpfsConnected();
-    
-    this.fetchOutgoingMessages(); // local
-    
+    this.fetchIdentity();
   }
 
-  logout = async () => {
+  fetchIdentity = async () => {
     
-    // remove all data 
-    // root nodes that aren't the app 
-    await sharedServices.logout();
-    
-    this.props.setState({
-      UsernamePassphraseNode: null,
-      waitingForEnabled: true,
-      receivingEnabled: false
-    });
-    
-    // window.location.reload();
-    
-  }
-  
-  checkIpfsConnected = async () => {
-    
-    console.log('checkIpfsConnected');
-    
-    let connectedColor = 'yellow';
-    
-    this.setState({
-      connectedColor
-    });
-    
-    let response = await fetch('/api/ipfs-connected',{
+    // let response = await fetch('/api/get_for_pattern',{
+    //   method: 'POST',
+    //   headers: {
+    //     'Accept': 'application/json',
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify({
+    //     pattern: 'app.*.*',
+    //     excludeData: true
+    //   })
+    // });
+
+    const rawResponse = await fetch('/ai', {
       method: 'POST',
       headers: {
-          "Content-Type": "application/json", // charset=utf-8
-      }
-    })
-    console.log('Response:', response);
-    
-    let responseJson = await response.json();
-    
-    console.log('responseJson', responseJson);
-    
-    if(responseJson.data){
-      connectedColor = 'green';
-    } else {
-      connectedColor = 'red';
-    }
-    
-    this.setState({
-      connectedColor
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: 'types.second.default.request.input',
+        data: {
+          auth: {
+            token: window.localStorage.getItem('token')
+          },
+          serviceName: 'services.second.default.get',
+          actionPath: 'private.identity.owner',
+          inputNode: {},
+          extras: {}
+        }
+      })
     });
-    
-    
-  }
-  
-  updateRouteFullPath = async () => {
-    
-    let {
-      routeHost,
-      routeText
-    } = this.state;
-    
-    routeText = routeText.trim();
-    
-    if(!routeText.length){
-      // routeHost = routeHost;
-      routeText = '/';
-    } else {
-      if(routeText.substring(0,1) != '/'){
-        routeText = '/' + routeText;
-      }
-    }
-    
-    let routeFullPath = routeHost + routeText;
-    
-    console.log('routeFullPath', routeFullPath);
+    const nodeResponse = await rawResponse.json(); // should be returned in data?
+
+    // response.data, nodelist.data = array 
+    let node = nodeResponse.data.data;
+
+    console.log('Owner Node', node);
+    // return false;
     
     this.setState({
-      routeFullPath
+      ownerNode: node,
+      loading:false
     })
+    
   }
   
-  handleSearchKeyDown = async (e) => {
-  
+  handleKeyDown = (e) => {
     if(e.key && e.key.toLowerCase() == 'enter'){
-      
-      this.handleSearch();
-      
+      this.processClaimUsername();
     } 
   }
   
-  handleTextareaKeydown = async (e) => {
+  handlePurchaseClick = () => {
+    alert('Purchase link here');
+  }
   
-    let nodeData = this.state.dataValue; 
-    try {
-      nodeData = dirtyJSON.parse(nodeData);
-      
-      this.setState({
-        canParse: true
-      });
-      
-    }catch(err){
-      this.setState({
-        canParse: false
-      });
-    }
+  handleClaimClick = () => {
+    this.processClaimUsername();
+  }
+  
+  handleChangeUsername = (e) => {
+    
+    let username = e.target.value;
     
     this.setState({
-      isSending: false
+      username
     })
     
-  } 
+    setTimeout(()=>{
+      if(this.state.username == username){  
+        this.checkUsername();
+      } else {
+        console.log('skip check');
+      }
+    },500)
+    
+  }
   
+  checkUsername = () => {
+    
+    return new Promise(async (resolve,reject)=>{
+      
+      console.log('checking username');
+      
+      this.usernameCheck++;
+      let thisUsernameCheck = this.usernameCheck;
+      
+      this.setState({
+        checkedUsername: true,
+        checkingUsername: true,
+        usernameAvailable: false,
+        purchaseInfo: null
+      });
+      
+      
+      // see if username is available 
+      let username = this.state.username;
+      let network = 'public';
+      
+      if(username.substring(0,7) == 'test://'){
+        username = username.substring(7);
+        network = 'test';
+      }
+      
+      if(username.substring(0,5) == 'test:'){
+        username = username.substring(5);
+        network = 'test';
+      }
+      username = username.normalize('NFKC').toLowerCase();
+      
+      let stellarServer = getStellarServer(network); 
+    
+      let userTargetSeed = jsSHA256.array(username);
+      var pairUsername = StellarSdk.Keypair.fromRawEd25519Seed(userTargetSeed);
+  
+      console.log('Network:', network);
+      console.log('Username:', username);
+      
+      // Load source account
+      let usernameAccount;
+      try {
+        usernameAccount = await stellarServer.loadAccount(pairUsername.publicKey())
+        console.error('Found username account (already taken)');
+        // window.alert('Username already taken');
+        
+        // lookup purchase or rentlink/contract 
+        let purchaseInfo = await this.loadPurchaseInfo(usernameAccount);
+        
+        if(purchaseInfo){
+          console.log('purchase info:', purchaseInfo);
+          try {
+            purchaseInfo = JSON.parse(purchaseInfo);
+            purchaseInfo = `Purchase Info: ${purchaseInfo.data.note}`;
+          }catch(err){
+            purchaseInfo = null;
+          }
+        }
+        
+        if(this.usernameCheck != thisUsernameCheck){
+          // changed
+          console.log('changed mid-check1');
+          return;
+        }
+      
+        this.setState({
+          checkingUsername: false,
+          usernameAvailable: false,
+          purchaseInfo
+        });
+        
+        return;
+      }catch(err){
+        console.log('Failed loading username account, good!', username);
+        
+        if(this.usernameCheck != thisUsernameCheck){
+          // changed
+          console.log('changed mid-check2');
+          return;
+        }
+      
+        console.log('usernameAvailable: true', username);
+        
+        this.setState({
+          checkingUsername: false,
+          usernameAvailable: true,
+          purchaseInfo: null
+        });
+        
+      }
+      
+    });
+    
+  }
+  
+  processClaimUsername = () => {
+    
+    return new Promise(async (resolve,reject)=>{
+      
+      // if(this.state.claimingUsername){
+      //   return resolve(false);
+      // }
+      
+      this.setState({
+        claimingUsername: true,
+        purchaseInfo: null
+      });
+      
+      
+      // see if username is available 
+      let usernameInfo = await this.parseRoute(this.state.username);
+      
+      let username = usernameInfo.baseIdentity;
+
+      let stellarServer = getStellarServer(usernameInfo.network); 
+    
+      var pairUsername = usernameInfo.pairForIdentity; 
+  
+      console.log('Network:', usernameInfo.network);
+      console.log('Username:', username);
+      
+      this.setState({
+        statusMsg: 'Checking Availability'
+      });
+      
+      // Load source account
+      let usernameAccount;
+      try {
+        usernameAccount = await stellarServer.loadAccount(pairUsername.publicKey())
+        console.error('Found username account (already taken)');
+        // window.alert('Username already taken');
+        
+        // lookup purchase or rentlink/contract 
+        let purchaseInfo = await this.loadPurchaseInfo(usernameAccount);
+        
+        if(purchaseInfo){
+          console.log('purchase info:', purchaseInfo);
+          try {
+            purchaseInfo = JSON.parse(purchaseInfo);
+            purchaseInfo = `Purchase Info: ${purchaseInfo.data.note}`;
+          }catch(err){
+            purchaseInfo = null;
+          }
+        }
+        
+        this.setState({
+          statusMsg: 'Username already taken',
+          purchaseInfo,
+          claimingUsername: false
+        });
+        return;
+      }catch(err){
+        console.log('Failed loading username account, good!');
+      }
+      
+      let ownerNode = this.state.ownerNode;
+      if(!ownerNode){
+        console.info('Creating new ownerNode');
+        ownerNode = {
+          type: 'types.second.default.identity',
+          data: {
+            username: null,
+            publicKey: null,
+            privateKey: null,
+            addresses: [{
+              type: 'types.second.default.identity_http_connection_address',
+              data: {
+                url: window.location.hostname + '/ai',
+                root: window.location.hostname,
+              }
+            }]
+          }
+        }
+      }
+
+      ownerNode.data.username = usernameInfo.nameWithProtocol; // "second://sub@name" or "test://sub@name" or "second://name"
+
+      if(!ownerNode.data.publicKey){
+        var newPair = keypair();
+        console.log(newPair);
+        ownerNode.data.publicKey = newPair.public;
+        ownerNode.data.privateKey = newPair.private;
+      }
+
+
+      // Get the IPFS value/data that we'll pin after saving to Stellar 
+      let hostfile = {
+        type: 'types.second.default.hostfile',
+        data: {
+          publicKey: ownerNode.data.publicKey, // plural, for rotation/forward-secrecy? 
+          addresses: ownerNode.data.addresses
+        }
+      }
+      console.log('hostfile:', hostfile);
+      // let ipfsHash, ipfsData;
+      let ipfsDataString = JSON.stringify(hostfile);
+      let ipfsHashOfData = await this.createIpfsHashOnSecond(ipfsDataString);
+      // let ipfsHashOfData = 'testing';
+      if(!ipfsHashOfData){
+        this.setState({
+          statusMsg: 'Failed creating ipfs hash',
+          claimingUsername: false
+        });
+      }
+      
+
+
+      // Claim the username and save the IPFS hash 
+      // - all in one transaction? (not currently, uses 2) 
+
+      // target account for passphrase (if we were just being told what to lock it with, vs locking on-page) 
+      // - difference of who is funding the username 
+      // var passphraseKeypair = StellarSdk.Keypair.random(); 
+      var pairInputSeed = StellarSdk.Keypair.fromSecret(this.state.stellarSeed);
+      
+      // let pubKey = passphraseKeypair.publicKey();
+      // let secretKey = passphraseKeypair.secret();
+
+      this.setState({
+        statusMsg: 'Claiming Username'
+      });
+
+      // Claim Username 
+      // - register account (and setup multisig) if I have a balance in my sourceAccount 
+      let claimedUsername = await this.claimUsername();
+      if(!claimedUsername){
+        // failed (printed status message)
+        this.setState({
+          claimingUsername: false
+        });
+        return;
+      }
+
+      this.setState({
+        statusMsg: 'Adding route to Stellar'
+      });
+
+      // Add IPFS data to route
+      let addedRouteToStellar = await this.addRouteData(ipfsHashOfData, ''); // adds to base
+      if(!addedRouteToStellar){
+        this.setState({
+          statusMsg: 'Failed adding to stellar',
+          claimingUsername: false
+        });
+        return
+      }
+
+      // Update ownerNode on server 
+      const putRawResponse = await fetch('/ai', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: 'types.second.default.request.input',
+          data: {
+            auth: {
+              token: window.localStorage.getItem('token')
+            },
+            serviceName: 'services.second.default.put',
+            actionPath: 'private.identity.owner',
+            inputNode: ownerNode,
+            extras: {}
+          }
+        })
+      });
+      const putResponse = await putRawResponse.json(); // should be returned in data?
+      console.log('putResponse:', putResponse);
+
+      this.fetchIdentity();
+
+      console.log('Done');
+      this.setState({
+        statusMsg: 'Success!',
+        claimingUsername: false
+      });
+      
+    });
+    
+  }
+
   parseRoute = async (routeUrl) => {
     
     // parse route 
@@ -330,11 +572,10 @@ class Home extends Component {
       parser = window.document.createElement('a');
       parser.href = routeUrl; 
     } else {
-      const { URL } = require('url');
       parser = new URL(routeUrl);
     }
     
-    let protocol = parser.protocol;
+    let protocol = parser.protocol.toLowerCase();
     switch(protocol){
       case 'http:':
       case 'https:':
@@ -353,11 +594,12 @@ class Home extends Component {
         return false;
     }
     
-    let baseIdentity = parser.host;
-    let subName = parser.username || '';
+    let baseIdentity = parser.host.normalize('NFKC').toLowerCase();;
+    let subName = (parser.username || '').normalize('NFKC').toLowerCase();;
     let fullName = subName.length ? `${subName}@${baseIdentity}` : baseIdentity;
     let password = parser.password.length ? parser.password : '';
     let routePath = parser.pathname || '/'; // parser.pathname ? parser.pathname.slice(1) : ''; // OLD removed leading slash! 
+    let network = 'public';
     
     console.log('Parsed route:', {baseIdentity, subName, password, routePath});
   
@@ -369,6 +611,7 @@ class Home extends Component {
       case 'idtest:':
       case 'test:':
         StellarSdk.Network.useTestNetwork();
+        network = 'test';
         break;
       default:
         console.error('Invalid protocol');
@@ -389,8 +632,11 @@ class Home extends Component {
     let lookupPath = baseIdentity + '|' + subName + '|' + password + '|' + routePath;
     
     let lookupPathHash = crypto.createHash('sha256').update(lookupPath).digest('hex'); 
+
+    let nameWithProtocol = [protocol, '//', fullName].join('');
     
     return {
+      nameWithProtocol,
       pairForIdentity,
       parser,
       protocol,
@@ -400,16 +646,316 @@ class Home extends Component {
       password,
       routePath,
       lookupPath,
-      lookupPathHash
+      lookupPathHash,
+      network
     }
     
   }
-  
-  loadIdentityRoute = async (protocol, pubKey, route) => {
+
+  addRouteData = async (ipfsHashOfData, routePath) => {
+    
+    // stellar key should be pasted in 
+    let stellarKey = this.state.stellarKey;
+    
+    this.setState({
+      isSaving: true,
+      failedSaving: false
+    });
     
     try {
         
-      let stellarServer = new StellarSdk.Server(horizonPossible[protocol]);
+      let routeInfo = await this.parseRoute(this.state.username + routePath);
+      console.log('routeInfo:', routeInfo);
+          
+      let username = this.state.username;
+      let passphrase = this.state.stellarSeed;
+      let network = 'public';
+      if(username.substring(0,7) == 'test://'){
+        username = username.substring(7);
+        network = 'test';
+      }
+      if(username.substring(0,5) == 'test:'){
+        username = username.substring(5);
+        network = 'test';
+      }
+      username = username.normalize('NFKC').toLowerCase();
+      
+      let stellarServer = getStellarServer(network); 
+
+      // multi-sig address for updating 
+      let userTargetSeed = jsSHA256.array(username);
+      var pairUsername = StellarSdk.Keypair.fromRawEd25519Seed(userTargetSeed);
+      var pairForWrite = StellarSdk.Keypair.fromSecret(passphrase);
+      
+      let identityAccount;
+      try {
+        identityAccount = await stellarServer.loadAccount(pairUsername.publicKey())
+        console.log('identityAccount:', identityAccount);
+      }catch(err){
+        console.error('Failed getting identityAccount', err);
+        window.alert('failed loading idenity');
+        throw 'Failed loading identity'
+      }
+      
+      // write the new data value 
+      console.log('writing ipfs values to ipfs');
+       
+      let value = ipfsHashOfData; //ipfsHashOfEncryptedData || ipfsHashOfData;
+      let name = routeInfo.lookupPathHash;
+      
+      console.log('name, value:', name, value);
+      
+      // Start building the transaction for manageData update
+      let transaction = new StellarSdk.TransactionBuilder(identityAccount,{
+        fee: StellarSdk.BASE_FEE
+      })
+      
+      .addOperation(StellarSdk.Operation.manageData({
+        name, // just use /path ? 
+        value // encrypted, if exists 
+      }))
+      // .addMemo(StellarSdk.Memo.hash(b32))
+      .setTimeout(1000)
+      .build();
+
+      // Sign the transaction to prove you are actually the person sending it.
+      transaction.sign(pairUsername); // targetKeys
+      transaction.sign(pairForWrite); // sourceKeys
+
+      // send to stellar network
+      let stellarResult = await stellarServer.submitTransaction(transaction)
+      .then(function(result) {
+        console.log('Stellar manageData Success! Results:'); //, result);
+        return result;
+      })
+      .catch(function(error) {
+        console.error('Stellar Something went wrong (failed updating data)!', error);
+        // If the result is unknown (no response body, timeout etc.) we simply resubmit
+        // already built transaction:
+        // server.submitTransaction(transaction);
+        return null;
+      });
+
+      // console.log('stellarResult', stellarResult);
+
+      if(!stellarResult){
+        console.error('Failed stellar manageData');
+        throw 'Failed stellar manageData'
+      }
+
+      console.log('stellarResult succeeded! (manageData)');
+      
+      console.log('stellarResult', stellarResult);
+      return true;
+      
+    }catch(err){
+      // failed finding route data 
+      console.error('Failed saving route', err);
+      
+      this.setState({
+        failedSaving: 'Failed saving route'
+      })
+      return false;
+    
+    }
+    
+    this.setState({isSaving: false});
+    
+  }
+  
+
+  createIpfsHashOnSecond = (fileValue) => {
+    // shared_node
+    // 
+    return new Promise(async (resolve,reject)=>{
+        
+      try {
+        
+        this.setState({
+          isCreating: true
+        })
+        
+        const rawResponse = await fetch('/ai', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            type: 'types.second.default.request.input',
+            data: {
+              auth: {
+                token: window.localStorage.getItem('token')
+              },
+              serviceName: 'services.second.default.capability.ipfs.files.add',
+              actionPath: 'builtin-input',
+              inputNode: {
+                type: '',
+                data: {
+                  pin: true,
+                  fileValue: fileValue
+                }
+              },
+              extras: {}
+            }
+          })
+        });
+        const nodeResponse = await rawResponse.json(); // should be returned in data?
+
+        // response.data, nodelist.data = array 
+        let hashResponse = nodeResponse.data.data;
+        let ipfsHash = hashResponse.hash;
+
+        this.setState({
+          isCreating: false
+        })
+        
+        return resolve(ipfsHash);
+        
+      } catch(err){
+        console.error('Failed createIpfsHashOnSecond request', err);
+        reject();
+      }
+    
+      this.setState({
+        isCreating: false
+      })
+      
+      
+      return;
+      
+    });
+    
+  }
+
+  handleSearch = async () => {
+
+    console.log('searching');
+    
+    // stellar key should be pasted in 
+    let stellarKey = this.state.stellarSeed;
+    
+    // let routeText = this.state.routeText;
+    let routeFullPath = this.state.username + '/';
+    
+    this.setState({
+      isSearching: true,
+      failedSearch: false
+    });
+    
+    try {
+      
+      // Load message-input node for username 
+      let routeInfo = await this.parseRoute(routeFullPath);
+      if(!routeInfo){
+        this.setState({
+          isSearching: false,
+          failedSearch: 'Invalid route'
+        });
+        return false;
+      }
+      
+      // Check username 
+      let stellarServer = getStellarServer(routeInfo.network)
+      
+      this.setState({
+        usernameClaimable: false,
+        usernameOwnedByMe: false
+      });
+      
+      let identityAccount;
+      try {
+        identityAccount = await stellarServer.loadAccount(routeInfo.pairForIdentity.publicKey())
+        console.log('identityAccount:', identityAccount);
+      }catch(err){
+        console.error('Failed getting identityAccount', err);
+        // WINDOW.alert('failed loading idenity');
+        
+        this.setState({
+          usernameClaimable: true
+        });
+      
+        throw 'Failed loading identity'
+      }
+      
+      // // owned by me? 
+      // var pairSource = StellarSdk.Keypair.fromSecret(this.state.stellarKey);
+      // var pairSourcePublicKey = pairSource.publicKey();
+      // for(let signer of identityAccount.signers){
+      //   if(signer.public_key == pairSourcePublicKey){
+      //     this.setState({
+      //       usernameOwnedByMe: true
+      //     })
+      //   }
+      // }
+      
+      
+      // Load route data 
+      let ipfsData = await this.loadIdentityRoute(routeInfo.network, routeInfo.pairForIdentity.publicKey(), routeInfo.lookupPath);
+      
+      if(!ipfsData){
+        // Unable to find valid 
+        console.error('Failed to lookup connection info');
+        this.setState({
+          isSearching: false,
+          failedSearch: 'Failed to find user connection info (1)'
+        })
+        return false;
+      }
+      
+      console.log('ipfsData:', ipfsData);
+      
+      // TODO: handle decryption automatically with passwords? 
+      
+      let dec = ipfsData;
+      let actualValue = dec;
+      if(routeInfo.password){
+        console.log('had password'); 
+        dec = await decryptToString(ipfsData, routeInfo.password + routeInfo.routePath);
+        console.log('decrypted1:', dec);
+        actualValue = await getIpfsValue(dec);
+        dec = await decryptToString(actualValue, routeInfo.password + routeInfo.routePath);
+        actualValue = dec;
+      }
+      
+      console.log('decrypted-same:', dec == actualValue ? true:false, dec, actualValue);
+      
+      
+      // expecting a Node type to be returned 
+      let nodeData;
+      let prettyData = actualValue;
+      try {
+        nodeData = JSON.parse(actualValue);
+        prettyData = JSON.stringify(nodeData, null, 2);
+      }catch(err){
+        console.error('unable to parse nodedata');
+      }
+      
+      console.log('Final nodeData:', nodeData);
+      
+      this.setState({
+        dataValue: prettyData
+      });
+      
+    }catch(err){
+      // failed finding route data 
+      console.error('Failed searching', err);
+      
+      this.setState({
+        failedSearch: true
+      })
+    
+    }
+    
+    this.setState({isSearching: false});
+    
+  }
+  
+  loadIdentityRoute = async (network, pubKey, route) => {
+    
+    try {
+        
+      let stellarServer = getStellarServer(network);
         
       let identityAccount;
       try {
@@ -462,1227 +1008,598 @@ class Home extends Component {
     
   }
   
-  handleSearch = async () => {
-    console.log('searching');
+
+  loadPurchaseInfo = (identityAccount) => {
     
-    // stellar key should be pasted in 
-    let stellarKey = this.state.stellarKey;
-    
-    // let routeText = this.state.routeText;
-    let routeFullPath = this.state.routeFullPath;
-    
-    this.setState({
-      isSearching: true,
-      failedSearch: false
-    });
-    
-    try {
+    return new Promise(async (resolve,reject)=>{
       
-      // Load message-input node for username 
-      let routeInfo = await this.parseRoute(this.state.routeFullPath);
-      if(!routeInfo){
-        this.setState({
-          isSearching: false,
-          failedSearch: 'Invalid route'
-        });
-        return false;
-      }
+      let subName = '';
+      let lookupPath = subName + '|' + 'purchase-info';
+      let lookupPathHash = crypto.createHash('sha256').update(lookupPath).digest('hex'); 
       
-      // Check username 
-      let stellarServer = new StellarSdk.Server(horizonPossible[routeInfo.protocol]);
-      
-      this.setState({
-        usernameClaimable: false,
-        usernameOwnedByMe: false
-      });
-      
-      let identityAccount;
-      try {
-        identityAccount = await stellarServer.loadAccount(routeInfo.pairForIdentity.publicKey())
-        console.log('identityAccount:', identityAccount);
-      }catch(err){
-        console.error('Failed getting identityAccount', err);
-        // window.alert('failed loading idenity');
-        
-        this.setState({
-          usernameClaimable: true
-        });
-      
-        throw 'Failed loading identity'
-      }
-      
-      // owned by me? 
-      var pairSource = StellarSdk.Keypair.fromSecret(this.state.stellarKey);
-      var pairSourcePublicKey = pairSource.publicKey();
-      for(let signer of identityAccount.signers){
-        if(signer.public_key == pairSourcePublicKey){
-          this.setState({
-            usernameOwnedByMe: true
-          })
-        }
-      }
-      
-      
-      // Load route data 
-      let ipfsData = await this.loadIdentityRoute(routeInfo.protocol, routeInfo.pairForIdentity.publicKey(), routeInfo.lookupPath);
-      
-      if(!ipfsData){
-        // Unable to find valid 
-        console.error('Failed to lookup connection info');
-        this.setState({
-          isSearching: false,
-          failedSearch: 'Failed to find user connection info (1)'
-        })
-        return false;
-      }
-      
-      console.log('ipfsData:', ipfsData);
-      
-      // TODO: handle decryption automatically with passwords? 
-      
-      let dec = ipfsData;
-      let actualValue = dec;
-      if(routeInfo.password){
-        console.log('had password'); 
-        dec = await decryptToString(ipfsData, routeInfo.password + routeInfo.routePath);
-        console.log('decrypted1:', dec);
-        actualValue = await getIpfsValue(dec);
-        dec = await decryptToString(actualValue, routeInfo.password + routeInfo.routePath);
-        actualValue = dec;
-      }
-      
-      console.log('decrypted-same:', dec == actualValue ? true:false, dec, actualValue);
-      
-      
-      // expecting a Node type to be returned 
-      let nodeData;
-      try {
-        nodeData = JSON.parse(actualValue);
-      }catch(err){
-        console.error('unable to parse nodedata');
-      }
-      
-      console.log('Final nodeData:', nodeData);
-      
-      this.setState({
-        dataValue: actualValue
-      });
-      
-    }catch(err){
-      // failed finding route data 
-      console.error('Failed searching', err);
-      
-      this.setState({
-        failedSearch: true
+      console.log('lookupPathHash', lookupPathHash);
+
+      // get the ipfs value 
+      let valueIpfsHash = await identityAccount.data({key: lookupPathHash})
+      .then(function(dataValue) {
+        let decoded = atob(dataValue.value);
+        return decoded;
       })
+      .catch(function (err) {
+        console.error('ipfs error', err);
+        return null;
+      })
+      
+      console.log('Data Result:', valueIpfsHash);
+      if(!valueIpfsHash){
+        return resolve(null);
+      }
+      
+      // Load IPFS data 
+      let ipfsData = await getIpfsValue(valueIpfsHash);
+      
+      return resolve(ipfsData);
+      
+    });
+      
+  }
+
+  generateStellarSeed = () => {
+    // creates the Stellar seed for your controlling account (NOT identity, for creating identity from this) 
+    // - makes the testnet "give me 1000 Lumens" request 
+
+    let stellarServer = getStellarServer('test'); 
+
+    this.setState({
+      generatingLumens: true,
+      lumensMessage: null
+    });
+
+    // // let pkSeed = crypto.createHash('sha256').update('blah blah this is my custom account').digest(); //returns a buffer
+    // let pkSeed = SHA256('testing this out');
+    // console.log('pkSeed:', pkSeed);
+    // var pair = StellarSdk.Keypair.fromRawEd25519Seed(pkSeed);
+    var pair = StellarSdk.Keypair.random(); //fromRawEd25519Seed(pkSeed);
+
+    this.setState({
+      stellarSeed: pair.secret()
+    });
+
+    // let stellarKeys = {
+    //   private: pair.secret(),
+    //   public: pair.publicKey()
+    // }
+    // console.log('stellarKeys',stellarKeys);
+    var url = new window.URL('https://friendbot.stellar.org/'),
+      params = { addr: pair.publicKey() };
+    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
+
+
+    fetch(url)
+    .then(response=>{
+      console.log('Response1:', response);
+      if(response.status == 200){
+        return response;
+      }
+      // failed!
+      this.setState({
+        generatingLumens: false,
+        lumensMessage: 'Failed populating seed wallet'
+      })
+      throw "Failed populating seed wallet with Friendbot lumens"
+    })
+    .then(response=>response.json())
+    .then(response=>{
+      console.log('Friendbot Response:', response);
+
+      prompt('Funded on TestNet. Copy this Seed/Secret value (it will only be shown once!)',pair.secret());
+
+      this.setState({
+        generatingLumens: false
+      });
+
+      // this.getBalance();
+
+    })
+    .catch(err=>{
+      console.error('Failed Response', err);
+    })
+
+
+
+    // }, function(error, response, body) {
+    //   if (error || response.statusCode !== 200) {
+    //     console.error('ERROR!', error || body);
+    //   }
+    //   else {
+    //     console.log('SUCCESS! You have a new account :)\n', body);
+    //   }
+
+
+    //   this.setState({
+    //     generatingLumens: false
+    //   });
+
+    // });
+
+
+    // // the JS SDK uses promises for most actions, such as retrieving an account
+    // stellarServer.loadAccount(stellarKeys.public)
+    // .catch(StellarSdk.NotFoundError, function (error) {
+    //   throw new Error('The destination account does not exist!');
+    // })
+    // .then(function(account) {
+    //   console.log('Balances for account: ' + stellarKeys.public);
+    //   account.balances.forEach(function(balance) {
+    //     console.log('Type:', balance.asset_type, ', Balance:', balance.balance);
+    //   });
+    // });
+
+
+    // // // Run a transaction FROM the target (needs to be sent money, then send money out?) 
+    // let pkTargetSeed = crypto.createHash('sha256').update('testing103').digest(); //returns a buffer
+    // var pairTarget = StellarSdk.Keypair.fromRawEd25519Seed(pkTargetSeed);
+
+    // let stellarKeysTarget = {
+    //   private: pairTarget.secret(),
+    //   public: pairTarget.publicKey()
+    // }
+
+    // console.log('stellarKeysTarget',stellarKeysTarget);
+
+    // // get transactions for Target
+
+    // var destinationId = stellarKeysTarget.public;
+
+    // // Transaction will hold a built transaction we can resubmit if the result is unknown.
+    // var transaction;
+
+
+    // // // the JS SDK uses promises for most actions, such as retrieving an account
+    // // stellarServer.loadAccount(destinationId)
+    // // .catch(StellarSdk.NotFoundError, function (error) {
+    // //   console.error('The destination account does not exist! (expected when creating new identity!)');
+    // // })
+    // // .then(function(account) {
+    // //   console.log('Balances for account: ' + stellarKeys.public);
+    // //   account.balances.forEach(function(balance) {
+    // //     console.log('Type:', balance.asset_type, ', Balance:', balance.balance);
+    // //   });
+    // // });
+
+
+    // // First, check to make sure that the destination account exists.
+
+    // const ipfsHashTo32ByteBuffer = function(ipfsHash) {
+    //   let buf = multihash.fromB58String(ipfsHash)
+    //   let digest = multihash.decode(buf).digest
+    //   return digest;
+    // }
+
+    // let b32 = ipfsHashTo32ByteBuffer('Qmf4437bCR2cwwpPh6dChwMSe5wuLJz32caf2aZP3xxtNR');
+
+    // let tmp1 = new Buffer('+FYuRGmZIz/e/T0UungCrIbiMCwukMFzPJWAHzsLH84=','base64'); //.toString('hex');
+    // console.log('Qmf4437bCR2cwwpPh6dChwMSe5wuLJz32caf2aZP3xxtNR');
+    // let digest1 = multihash.encode(tmp1, 'sha2-256');
+    // let hash1 = multihash.toB58String(digest1);
+    // console.log(hash1);
+
+    // // let b32 = crypto.createHash('sha256').update('test').digest(); //returns a buffer
+    // // console.log('b32:', b32.toString('hex'));
+    // // let str2 = new Buffer('n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg=','base64').toString('hex')
+    // // console.log('same?:', str2); //bs58.decode(str2).toString('hex'));
+
+    // // stellarServer.loadAccount(stellarKeys.public)
+    // //   // // If the account is not found, surface a nicer error message for logging.
+    // //   // .catch(StellarSdk.NotFoundError, function (error) {
+    // //   //   throw new Error('The destination account does not exist!');
+    // //   // })
+    // //   // If there was no error, load up-to-date information on your account.
+    // //   // .then(function() {
+    // //   //   return stellarServer.loadAccount(stellarKeys.public);
+    // //   // })
+    // //   .then(function(sourceAccount) {
+    // //     // Start building the transaction.
+    // //     transaction = new StellarSdk.TransactionBuilder(sourceAccount)
+          
+    // //       .addOperation(StellarSdk.Operation.createAccount({
+    // //         destination: pairTarget.publicKey(),
+    // //         startingBalance: "10"
+    // //         // source: pair
+    // //       }))
+
+    // //       // A memo allows you to add your own metadata to a transaction. It's
+    // //       // optional and does not affect how Stellar treats the transaction.
+    // //       // .addMemo(StellarSdk.Memo.text('Qmf4437bCR2cwwpPh6dChwMSe5wuLJz32caf2aZP3xxtNR'))
+    // //       .addMemo(StellarSdk.Memo.hash(b32))
+    // //       .build();
+    // //     // Sign the transaction to prove you are actually the person sending it.
+    // //     transaction.sign(pair); // sourceKeys
+    // //     // send to stellar network
+    // //     return stellarServer.submitTransaction(transaction);
+    // //   })
+    // //   .then(function(result) {
+    // //     console.log('Stellar Success! Results:', result);
+    // //   })
+    // //   .catch(function(error) {
+    // //     console.error('Stellar Something went wrong!', error);
+    // //     // If the result is unknown (no response body, timeout etc.) we simply resubmit
+    // //     // already built transaction:
+    // //     // server.submitTransaction(transaction);
+    // //   });
+
+
+
+
+    // // // Get the 1st (on page 1 only!) transaction where the memo is an ipfs hash 
+    // // stellarServer.transactions()
+    // //   .forAccount(destinationId)
+    // //   .call()
+    // //   .then(function (page) {
+    // //     console.log('Page 1: ', page.records.length);
+    // //     console.log(JSON.stringify(page.records,null,2));
+    // //     // console.log(page.records.length);
+    // //   })
+
+
+  }
+
+  claimUsername = async () => {
+    // sets up the identity
+    // - assuming NOT setup at all yet 
+    // - error if already created 
+
+    // also sets up multi-sig control over data! 
     
+        
+    let username = this.state.username;
+    let passphrase = this.state.stellarSeed;
+    let network = 'public';
+    
+    if(username.substring(0,7) == 'test://'){
+      username = username.substring(7);
+      network = 'test';
     }
     
-    this.setState({isSearching: false});
+    if(username.substring(0,5) == 'test:'){
+      username = username.substring(5);
+      network = 'test';
+    }
+    username = username.normalize('NFKC').toLowerCase();
     
-  }
-  
-  getBalance = async (idx) => { 
-    // 0 = From 
-    // 1 = To 
-    
-    this.setState(state=>{
-      state.gettingBalance[idx] = true;
-      state.balanceOf[idx] = null;
-      return state;
+    let stellarServer = getStellarServer(network); 
+
+    // validate stellar seed 
+    // - an account with enough Lumens in it 
+
+    this.setState({
+      claimingUsername: true // probably already true! 
+    });
+
+    var pairSource = StellarSdk.Keypair.fromSecret(passphrase);
+
+    let errors = [];
+
+    this.setState({
+      statusMsg: 'Rechecking Username'
     });
     
-    let pubKey;
-    
-    // get protocol from "To" person 
-    let routeInfo = await this.parseRoute(this.state.toRouteHost);
-    if(!routeInfo){
-      window.alert('Invalid username protocol to send to');
-      this.setState(state=>{
-        state.gettingBalance[idx] = false;
-        return state;
+    // Load source account
+    let sourceAccount;
+    try {
+      sourceAccount = await stellarServer.loadAccount(pairSource.publicKey())
+    }catch(err){
+      // problem with account 
+      // window.alert('The seed stellar account does not exist!');
+
+      this.setState({
+        statusMsg: 'Failed creating account, please try again',
+        claimingUsername: false
       });
       return false;
     }
-    
-    
-    let stellarServer = new StellarSdk.Server(horizonPossible[routeInfo.protocol]);
-    
-    if(idx == 0){
-      
-      // From (private key only) 
-      var pairSource = StellarSdk.Keypair.fromSecret(this.state.fromRouteHost);
-      pubKey = pairSource.publicKey();
-      
-    } else {
-      
-      // To (username and protocol) 
-      pubKey = routeInfo.pairForIdentity.publicKey();
-      
+
+    // get source balance 
+    if(sourceAccount){
+      let balance = 0;
+      balance = sourceAccount.balances[0].balance;
+
+      console.log('Balance:', balance);
+
+      balance = parseFloat(balance);
+      if(balance < parseFloat(fundingBalance)){
+        
+        this.setState({
+          statusMsg: 'Insufficient balance in source account (need 6+ lumens). Please try again',
+          claimingUsername: false
+        });
+
+        return false;
+      }
     }
-    
-    
+
+    // validate that Identity is available (or already owned)
+    // - should be a nonexistant account (or have my sourcePublicKey as a signer) 
+    // - TODO: "rent" via smart contracts 
+
+    let pkTargetSeed = jsSHA256.array(username);
+    var pairTarget = StellarSdk.Keypair.fromRawEd25519Seed(pkTargetSeed);
+
     let targetAccount;
     try {
-      targetAccount = await stellarServer.loadAccount(pubKey)
-    }catch(err){
-      console.error('Failed getting targetAccount', err);
-      this.setState(state=>{
-        state.gettingBalance[idx] = false;
-        return state;
+      targetAccount = await stellarServer.loadAccount(pairTarget.publicKey())
+      console.log('targetAccount:', targetAccount);
+      
+      this.setState({
+        statusMsg: 'Username already exists, cant claim',
+        claimingUsername: false
       });
+
+      return false;
+    }catch(err){
+
+    }
+
+
+    this.setState({
+      statusMsg: 'Claiming Username'
+    });
+
+    // Start building the transaction.
+    // - fees: https://www.stellar.org/developers/guides/concepts/fees.html
+    // - starting balance: (2 + # of entries) × base reserve
+    //   - 2 signers (original, my secret) 
+    //   - 1 Data entry 
+    let transaction = new StellarSdk.TransactionBuilder(sourceAccount,{
+      fee: StellarSdk.BASE_FEE
+    })
+    .addOperation(StellarSdk.Operation.createAccount({
+      destination: pairTarget.publicKey(),
+      startingBalance: fundingBalance // 2.5 is required, 2.5 extra for manageData entries (allows for 4 entries? second, nodechain, ...) 
+      // source: pair
+    }))
+
+    // A memo allows you to add your own metadata to a transaction. It's
+    // optional and does not affect how Stellar treats the transaction.
+    // .addMemo(StellarSdk.Memo.text('Qmf4437bCR2cwwpPh6dChwMSe5wuLJz32caf2aZP3xxtNR'))
+    // .addMemo(StellarSdk.Memo.hash(b32))
+    .setTimeout(1000)
+    .build();
+
+    // Sign the transaction to prove you are actually the person sending it.
+    transaction.sign(pairSource); // sourceKeys
+
+    // send to stellar network
+    let stellarResult = await stellarServer.submitTransaction(transaction)
+    .then(function(result) {
+      console.log('Stellar Success! Results:', result);
+      return result;
+    })
+    .catch(function(error) {
+      console.error('Stellar Something went wrong!', error);
+      // If the result is unknown (no response body, timeout etc.) we simply resubmit
+      // already built transaction:
+      // server.submitTransaction(transaction);
+      
+      return null;
+    });
+
+    console.log('stellarResult', stellarResult);
+    if(!stellarResult){
+      // window.alert('Failed claiming account');
+
+      this.setState({
+        statusMsg: 'Failed claiming account at funding stage',
+        claimingUsername: false
+      });
+
       return false;
     }
-    
-    console.log('targetAccount:', targetAccount);
-    
-    this.setState(state=>{
-      state.balanceOf[idx] = targetAccount.balances[0].balance;
-      state.gettingBalance[idx] = false;
-      return state;
-    });
-    
-  }
-    
-  
-  handleTransfer = async () => { 
-    
-    // stellar key should be pasted in 
-    let fromStellarKey = this.state.fromRouteHost;
-    let toRouteHost = this.state.toRouteHost;
-    let transferAmount = this.state.transferAmount;
-      
-    this.setState({
-      isTransferring: true,
-      failedTransfer: false
-    });
-    
-    try {
-      
-      if(parseFloat(transferAmount) < 0){
-        this.setState({
-          isTransferring: false,
-          failedTransfer: 'Invalid transfer Amount'
-        });
-        return false;
-      }
-      
-      // Load username (no routePath expected!) 
-      let routeInfo = await this.parseRoute(this.state.toRouteHost);
-      if(!routeInfo){
-        this.setState({
-          isTransferring: false,
-          failedTransfer: 'Invalid username to send to (1)'
-        });
-        return false;
-      }
-      
-      if(routeInfo.routePath.length && routeInfo.routePath != '/'){
-        this.setState({
-          isTransferring: false,
-          failedTransfer: 'Invalid username to send to (2)'
-        });
-        return false;
-        
-      }
-      
-      console.log('toRouteInfo:', routeInfo);
-      
-      // Check username 
-      let stellarServer = new StellarSdk.Server(horizonPossible[routeInfo.protocol]);
-      
-      let targetAccount;
-      try {
-        targetAccount = await stellarServer.loadAccount(routeInfo.pairForIdentity.publicKey())
-        console.log('targetAccount:', targetAccount);
-      }catch(err){
-        console.error('Failed getting targetAccount', err);
-        // window.alert('failed loading idenity');
-        
-        this.setState({
-          isTransferring: false,
-          failedTransfer: 'Failed finding target account (doesnt exist on blockchain)'
-        });
-      
-        return false;
-      }
-      
-      
-      var pairSource = StellarSdk.Keypair.fromSecret(fromStellarKey);
-      // var pairSourcePublicKey = pairSource.publicKey();
-      
-      let sourceAccount;
-      try {
-        sourceAccount = await stellarServer.loadAccount(pairSource.publicKey())
-        console.log('sourceAccount:', sourceAccount);
-      }catch(err){
-        console.error('Failed getting sourceAccount', err);
-        // window.alert('failed loading idenity');
-        
-        this.setState({
-          isTransferring: false,
-          failedTransfer: 'Failed finding source account (doesnt exist on blockchain)'
-        });
-      
-        return false;
-      }
-      
-      
-      // Start building the transaction for manageData update
-      let transaction = new StellarSdk.TransactionBuilder(sourceAccount)
-        .addOperation(StellarSdk.Operation.payment({
-          destination: routeInfo.pairForIdentity.publicKey(),
-          // Because Stellar allows transaction in many currencies, you must
-          // specify the asset type. The special "native" asset represents Lumens.
-          asset: StellarSdk.Asset.native(),
-          amount: transferAmount
-        }))
-        // A memo allows you to add your own metadata to a transaction. It's
-        // optional and does not affect how Stellar treats the transaction.
-        // .addMemo(StellarSdk.Memo.text('Test'))
-        .build();
 
-      // Sign the transaction to prove you are actually the person sending it.
-      // transaction.sign(routeInfo.pairForIdentity); // targetKeys
-      transaction.sign(pairSource); // sourceKeys
 
-      // send to stellar network
-      let stellarResult = await stellarServer.submitTransaction(transaction)
-      .then(function(result) {
-        console.log('Stellar payment Success! Results:'); //, result);
-        return result;
-      })
-      .catch(function(error) {
-        console.error('Stellar Something went wrong (failed payment)!', error);
-        // If the result is unknown (no response body, timeout etc.) we simply resubmit
-        // already built transaction:
-        // server.submitTransaction(transaction);
-        return null;
+    targetAccount = await stellarServer.loadAccount(pairTarget.publicKey())
+
+    // Add multisig 
+    console.log('adding multisig', targetAccount);
+
+    // set multi-sig on this account 
+    // - will fail if I am unable to "claim" 
+
+    // Start building the transaction.
+    let transaction2 = new StellarSdk.TransactionBuilder(targetAccount,{
+      fee: StellarSdk.BASE_FEE
+    })
+
+    // .addOperation(StellarSdk.Operation.manageData({
+    //   name: '|second',
+    //   value: '-'
+    // }))
+
+    .addOperation(StellarSdk.Operation.setOptions({
+      signer: {
+        ed25519PublicKey: pairSource.publicKey(),
+        weight: 1
+      }
+    }))
+    .addOperation(StellarSdk.Operation.setOptions({
+      masterWeight: 1, // set master key weight (should really be nothing, and controlled by this other key?) 
+      lowThreshold: 2, // trustlines
+      medThreshold: 2, // manageData
+      highThreshold: 2  // setOptions (multi-sig)
+    }))
+    .setTimeout(1000)
+    .build();
+
+    // Sign the transaction to prove you are actually the person sending it.
+    transaction2.sign(pairTarget); // sourceKeys
+    // transaction2.sign(pairSource); // sourceKeys
+
+    // send to stellar network
+    let stellarResult2 = await stellarServer.submitTransaction(transaction2)
+    .then(function(result) {
+      console.log('Stellar MultiSig Setup Success! Results:', result);
+      return result
+    })
+    .catch(function(error) {
+      console.error('Stellar Something went wrong (failed multisig)!', error);
+      // If the result is unknown (no response body, timeout etc.) we simply resubmit
+      // already built transaction:
+      // server.submitTransaction(transaction);
+      return null;
+    });
+
+    console.log('Multisig result:', stellarResult2);
+
+    if(!stellarResult2){
+      // window.alert('Failed multisig setup');
+
+      this.setState({
+        statusMsg: 'Failed claiming username at multisig setup',
+        claimingUsername: false
       });
 
-      // console.log('stellarResult', stellarResult);
-
-      if(!stellarResult){
-        console.error('Failed stellar payment');
-        throw 'Failed stellar payment'
-      }
-      
-      console.log('Payment succeeded!', stellarResult);
-      
-      
-    }catch(err){
-      // failed finding route data 
-      console.error('Failed transfer', err);
-      
-      this.setState({
-        failedTransfer: true
-      })
-    
+      return false;
     }
-    
-    this.setState({isTransferring: false});
-    
-  }
-  
-  
-  handleAddRouteData = async (e) => {
-    
-    // stellar key should be pasted in 
-    let stellarKey = this.state.stellarKey;
-    
-    let nodeData = this.state.dataValue; // expecting a string, should be JSON.parse'able 
-    
-    // try {
-    //   JSON.parse(nodeData);
-    // }catch(err){
-    //   window.alert('Invalid JSON specified');
-    //   return false;
-    // }
-    
-    // let routeText = this.state.routeText;
-    let routeFullPath = this.state.routeFullPath;
-    
-    this.addRouteData(nodeData, routeFullPath);
-  }
-  
-  
-  
-  addRouteData = async (nodeData, routeFullPath) => {
-    
-    // stellar key should be pasted in 
-    let stellarKey = this.state.stellarKey;
+
+    // window.alert('Claimed Username');
+    this.setState({
+      statusMsg: 'Claimed Username'
+    });
+
+    // // re-run validation (to verify changes worked!) 
+    // await this.validate();
+
+
+    // await newNode(this.state.newNode);
     
     this.setState({
-      isSaving: true,
-      failedSaving: false
+      claimingUsername: false,
     });
     
     try {
-        
-      let routeInfo = await this.parseRoute(routeFullPath);
-      if(!routeInfo){
-        this.setState({
-          isSaving: false,
-          failedSaving: 'Invalid route'
-        });
-        return false;
+      if(this.props.onAfterCreate){
+        this.props.onAfterCreate();
       }
-        
-      // encrypt data using password
-      if(routeInfo.password){
-        nodeData = await encryptToString(nodeData, routeInfo.password+routeInfo.routePath);
-      }
-      
-      console.log('encrypted NodeData:', nodeData);
-      
-      // create IPFS hashes of nodeData 
-      let ipfsHashOfData = await this.createIpfsHashOnSecond(nodeData); // TODO 
-      
-      console.log('ipfsHashOfData:', ipfsHashOfData);
-      
-      let encryptedDataToSave,
-        ipfsHashOfEncryptedData;
-      if(routeInfo.password){
-        // encrypt the ipfs hash using password+path 
-        console.log('Using password for encryption');
-        encryptedDataToSave = await encryptToString(ipfsHashOfData, routeInfo.password+routeInfo.routePath); // TODO
-        ipfsHashOfEncryptedData = await this.createIpfsHashOnSecond(encryptedDataToSave); 
-        console.log('ipfsHashOfEncryptedData:', ipfsHashOfEncryptedData);
-      }
-      
-      
-      // Add files and pin data to IPFS 
-      // TODO 
-      
-      
-      // Write to Stellar 
-      let stellarServer = new StellarSdk.Server(horizonPossible[routeInfo.protocol]);
-      
-      // multi-sig address for updating 
-      var pairForWrite = StellarSdk.Keypair.fromSecret(stellarKey);
-      
-      console.log('pairForIdentity', routeInfo.pairForIdentity);
-      
-      let identityAccount;
-      try {
-        identityAccount = await stellarServer.loadAccount(routeInfo.pairForIdentity.publicKey())
-        console.log('identityAccount:', identityAccount);
-      }catch(err){
-        console.error('Failed getting identityAccount', err);
-        window.alert('failed loading idenity');
-        throw 'Failed loading identity'
-      }
-      
-      // write the new data value 
-      console.log('writing ipfs values to ipfs');
-       
-      let value = ipfsHashOfEncryptedData || ipfsHashOfData;
-      let name = routeInfo.lookupPathHash;
-      
-      console.log('name, value:', name, value);
-      
-      // Start building the transaction for manageData update
-      let transaction = new StellarSdk.TransactionBuilder(identityAccount)
-      
-      .addOperation(StellarSdk.Operation.manageData({
-        name, // just use /path ? 
-        value // encrypted, if exists 
-      }))
-      // .addMemo(StellarSdk.Memo.hash(b32))
-      .build();
-
-      // Sign the transaction to prove you are actually the person sending it.
-      transaction.sign(routeInfo.pairForIdentity); // targetKeys
-      transaction.sign(pairForWrite); // sourceKeys
-
-      // send to stellar network
-      let stellarResult = await stellarServer.submitTransaction(transaction)
-      .then(function(result) {
-        console.log('Stellar manageData Success! Results:'); //, result);
-        return result;
-      })
-      .catch(function(error) {
-        console.error('Stellar Something went wrong (failed updating data)!', error);
-        // If the result is unknown (no response body, timeout etc.) we simply resubmit
-        // already built transaction:
-        // server.submitTransaction(transaction);
-        return null;
-      });
-
-      // console.log('stellarResult', stellarResult);
-
-      if(!stellarResult){
-        console.error('Failed stellar manageData');
-        throw 'Failed stellar manageData'
-      }
-
-      console.log('stellarResult succeeded! (manageData)');
-      
-      console.log('stellarResult', stellarResult);
-      
+      // EE.emit('recheck-login', '');
     }catch(err){
-      // failed finding route data 
-      console.error('Failed saving route', err);
-      
-      this.setState({
-        failedSaving: 'Failed saving route'
-      })
-    
+      console.error('recheck login failed:', err);
     }
-    
-    this.setState({isSaving: false});
-    
-  }
-  
-  handleViewAccount = async () => {
-    
-    let stellarKey = this.state.stellarKey;
-    
-    let routePath = this.state.routePath;
-    
-    try {
-        
-      // parse route 
-      // - parse twice, second time probably using http, cuz id/idtest are not recognized protocols yet 
-      let parser;
-      if(typeof window != 'undefined'){
-        parser = window.document.createElement('a');
-        parser.href = routePath; 
-      } else {
-        const { URL } = require('url');
-        parser = new URL(routePath);
-      }
-      
-      let protocol = parser.protocol;
-      switch(protocol){
-        case 'id:':
-        case 'idtest:':
-        case 'second:':
-          parser.protocol = 'http:';
-          break;
-        
-        default:
-          window.alert('Invalid protocol. please use id:// or idtest:// or second://');
-          throw 'Invalid protocol'
-      }
-      
-      let baseIdentity = parser.host;
-      
-      let pkTargetSeed = jsSHA256.array(baseIdentity);
-      var pairTarget = StellarSdk.Keypair.fromRawEd25519Seed(pkTargetSeed);
-      
-      let href = `https://horizon-testnet.stellar.org/accounts/${pairTarget.publicKey()}`;
-      
-      window.open(href, '_blank');
-      
-      console.log('href:', href);
-    
-    }catch(err){
-      console.error('Failed finding identity link:', err);
-      
-    }
-  }
-  
-  createIpfsHashOnSecond = async (fileValue) => {
-    // shared_node
-    // 
-    return new Promise(async (resolve,reject)=>{
-        
-      try {
-        
-        this.setState({
-          isCreating: true
-        })
 
-        console.log('stellarKey:', this.state.stellarKey);
-        var passwordPair = StellarSdk.Keypair.fromSecret(this.state.stellarKey);
-        
-        let sourcePublicKey = passwordPair.publicKey();
-        let sig = passwordPair.sign(fileValue).toString('base64'); //fileValue);
-        
-        console.log('sig:', sig, typeof sig);
-        
-        fetch('/api/ipfs-pin',{
-          method: 'POST',
-          headers: {
-              "Content-Type": "application/json", // charset=utf-8
-          },
-          body: JSON.stringify({
-            username: this.state.inviteCode,
-            sourcePublicKey, 
-            sig,
-            fileAsString: fileValue
-          })
-        })
-        .then(response=>{
-          console.log('Response1:', response);
-          if(response.status == 200){
-            return response;
-          }
-          // failed!
-          console.error('failed!', response);
-          // this.setState({
-          //   generatingLumens: false,
-          //   lumensMessage: 'Failed populating seed wallet'
-          // })
-          // throw "Failed populating seed wallet with Friendbot lumens"
-          reject()
-        })
-        .then(response=>response.json())
-        .then(async (response)=>{
-          console.log('Response:', response);
-          
-          // Succeeded in creating ownership account for us to reserve the username 
-          // - NOT creatinig username on server, just accepting the invite for controller account 
-          //   - prevents passphrase from needing to go to the server (just send the pubkey!) 
-          
-          if(response.data.success != true){
-            console.error('Failed:', response.data);
-            window.alert('Failed pinning IPFS data, please try again or contact support');
-            reject();
-            return false;
-          }
-          
-          console.log('success pinning!');
-          
-          let hash = response.data.hash || 'MISSING HASH';
-          
-          console.log('hash:', hash);
-          
-          resolve(hash);
-          
-          
-        })
-        .catch((err)=>{
-          console.error(err);
-          reject();
-        })
-          
-        
-        // // Pin! 
-        // resolve(hash);
-        // // {
-        // //   type: 'ipfs_hash:Qmdflj',
-        // //   data: hash
-        // // });
-        
-      } catch(err){
-        console.error('Failed TalkToSecond request', err);
-        reject();
-      }
-    
-      this.setState({
-        isCreating: false
-      })
-      
-      
-      return;
-      
-    });
-    
+    return true;
+
   }
   
-  handlePrettify = async () => {
-    
-    let nodeData = this.state.dataValue; 
-    try {
-      nodeData = dirtyJSON.parse(nodeData);
-      
-      this.setState({
-        dataValue: JSON.stringify(nodeData, null, 2)
-      })
-      
-    }catch(err){
-    }
-    
-    
-  }
+  render = () => {
   
-  handleUpdateDefaultInput = async (name) => {
-    
-    let dataValue = '';
-    
-    switch(name){
-      case 'meta_redirect':
-        dataValue = '' + 
-`<html>
-<head>
-<meta http-equiv="refresh" content="0;url=http://example.com" />
-</head>
-</html>`
-        break;
-        
-      default:
-        break;
-    }
-    
-    this.setState({
-      dataValue
-    });
-    
-    return false;
-    
-  }
-  
-  renderRoutePartial = () => {
-    
     return (
-      
-      <div>
-        {/* Route Input/Buttons */}  
-        <div className="">
-        
-          {/* Desktop version */}  
-          <div className="is-hidden-touch">
-            <div className="field has-addons">
-              <div className="control has-icons-left">
-                <input className="input" value={this.state.routeHost} onChange={e=>this.setState({routeHost:e.target.value}, this.updateRouteFullPath)} placeholder="" />
-                  <span className="icon is-small is-left">
-                    <i className="fas fa-user-circle"></i>
-                  </span>
-              </div>
-              <div className="control is-expanded">
-                <input className="input" value={this.state.routeText} onChange={e=>this.setState({routeText:e.target.value}, this.updateRouteFullPath)} placeholder="" onKeyDown={this.handleSearchKeyDown} />
-              </div>
-              <div className="control">
-                <button className={"button is-info " + (this.state.isSearching ? 'is-loading':'')} onClick={this.handleSearch}>Load Data For Route</button>
-              </div>
-              <div className="control">
-                <button className={"button is-success " + (this.state.isSaving ? 'is-loading':'')} 
-                onClick={this.handleAddRouteData}
-                disabled={this.state.routeHost != this.state.defaultRouteHost}
-                >Save Data</button>
-              </div>
-              
-              {/* can be claimed? 
-              <div className="control">
-                <button className={"button is-default " + (this.state.isClaiming ? 'is-loading':'')} 
-                onClick={this.handleClaimUsername}
-                disabled={!this.state.usernameClaimable}>Claim Username</button>
-              </div>
-              <div className="control">
-                <button className={"button is-default " + (this.state.isFunding ? 'is-loading':'')} onClick={this.handleFundAccount}>Add Funds</button>
-              </div>
-              
-              
-              <div className="control">
-                <button className={"button is-default "} onClick={this.handleViewAccount}>View Account</button>
-              </div>
-              
-              <div className="control">
-                <button className={"button is-default "}>Change Private Key (SBKO...)</button>
-              </div>
-              */}
-              
-            </div>
-          </div>
-          
-            
-          {/* Mobile version*/}
-          <div className="is-hidden-desktop">
-            
-            <div className="field has-addons">
-              <div className="control has-icons-left is-expanded">
-                <input className="input" value={this.state.routeHost} onChange={e=>this.setState({routeHost:e.target.value}, this.updateRouteFullPath)} placeholder="" />
-                <span className="icon is-small is-left">
-                  <i className="fas fa-user-circle"></i>
-                </span>
-              </div>
-            </div>
-            <div className="field has-addons">
-              <div className="control is-expanded">
-                <input className="input" value={this.state.routeText} onChange={e=>this.setState({routeText:e.target.value}, this.updateRouteFullPath)} placeholder="" onKeyDown={this.handleSearchKeyDown} autocapitalize="off" />
-              </div>
-            </div>
-            <div className="field has-addons">
-              <div className="control">
-                <button className={"button is-info " + (this.state.isSearching ? 'is-loading':'')} onClick={this.handleSearch}>Load Data For Route</button>
-              </div>
-              <div className="control">
-                <button className={"button is-success " + (this.state.isSaving ? 'is-loading':'')} 
-                onClick={this.handleAddRouteData}
-                disabled={!this.state.usernameOwnedByMe}
-                >Save Data</button>
-              </div>
-            </div>
-          
-          </div>
-          
-          
-          <div>
-            {
-              !this.state.failedAdd ? '':
-              <span className='has-text-danger'>
-                Failed adding
-              </span>
-            }
-            {
-              !this.state.failedSearch ? '':
-              <span className='has-text-danger'>
-                Failed loading route data
-              </span>
-            }
-            {
-              !this.state.failedClaim ? '':
-              <span className='has-text-danger'>
-                Failed claiming identity
-              </span>
-            }
-            {
-              !this.state.failedFunding ? '':
-              <span className='has-text-danger'>
-                Failed funding
-              </span>
-            }
-            &nbsp;
-          </div>
-          
-        </div>
-        
-        <br />
-        
-        <div>
-          
-          <textarea 
-            className='textarea' 
-            onChange={e=>this.setState({dataValue: e.target.value})} 
-            onKeyDown={this.handleTextareaKeydown}
-            value={this.state.dataValue} 
-            rows="10" 
-          />
-          
-          <br />
-        
-          <div className="control">
-            <button 
-              className={"button is-default "} 
-              onClick={this.handlePrettify}
-              disabled={!this.state.canParse}
-            >Prettify JSON</button>
-          </div>
-          
-          <br />
-          
-          <p>
-            Defaults: 
-          </p>
-          <a onClick={e=>this.handleUpdateDefaultInput('meta_redirect')}>
-            Meta Redirect
-          </a>
-        </div>
-        
-        <br />
-        
-        <div className="">
-          <span>
-            Anyone can view the route's data by visiting: 
-            <br />
-            <a href={`https://viewsecondroute.com/raw/${this.state.routeFullPath}`}>
-              https://viewsecondroute.com/raw/{this.state.routeFullPath}
-            </a> (server-side) 
-            <br />
-            or 
-            <br />
-            <a href={`https://viewsecondroute.com/view/${this.state.routeFullPath}`}>
-              https://viewsecondroute.com/view/{this.state.routeFullPath}
-            </a> (client-side) 
-          </span>
-        </div>
-        
-      </div>
-      
-    )
-    
-  }
-  
-  renderSendMessagePartial = () => {
-    
-    return (
-      
-      <div>
-      
-        <div className="">
-        
-          {/* Desktop version */}  
-          <div className="is-hidden-touch">
-            <div className="field has-addons">
-              <div className="control has-icons-left is-expanded">
-                <input className="input" value={this.state.sendMessageHost} onChange={e=>this.setState({sendMessageHost:e.target.value})} placeholder="" />
-                <span className="icon is-small is-left">
-                  <i className="fas fa-user-circle"></i>
-                </span>
-              </div>
-              <div className="control">
-                <button 
-                  className={"button is-default " + (this.state.isSending ? 'is-loading':'')} 
-                  onClick={this.handleSendMessage}
-                  disabled={!this.state.msgValue.length}
-                >Send Message</button>
-              </div>
-              
-            </div>
-          </div>
-          
-            
-          {/* Mobile version*/}
-          <div className="is-hidden-desktop">
-            
-            <div className="field has-addons">
-              <div className="control is-expanded">
-                <input className="input" value={this.state.sendMessageHost} onChange={e=>this.setState({sendMessageHost:e.target.value})} placeholder="" />
-              </div>
-            </div>
-            <div className="field has-addons">
-              <div className="control">
-                <button className={"button is-info " + (this.state.isSending ? 'is-loading':'')} onClick={this.handleSendMessage}>Send Message</button>
-              </div>
-            </div>
-          
-          </div>
-          
-          
-          <div>
-            {
-              !this.state.failedSending ? '':
-              <span className='has-text-danger'>
-                {this.state.failedSending}
-              </span>
-            }
-            &nbsp;
-          </div>
-          
-        </div>
-        
-        <br />
-        
-        <div>
-          
-          <textarea 
-            className='textarea' 
-            onChange={e=>this.setState({msgValue: e.target.value})} 
-            onKeyDown={this.handleTextareaKeydown}
-            value={this.state.msgValue} 
-            rows="10" 
-          />
-          
-        </div>
-        
-        <br />
-        
-        <div>
-          
-          <h3 className="title is-6">
-            Outgoing Messages (in-memory) 
-          </h3>
-          
-          {
-            this.state.outgoingMessages.length ? 
-              <div>
-                {
-                  this.state.outgoingMessages.sort((a,b)=>{return a.createdAt < b.createdAt}).map(msg=>{
-                    return (    
-                      <div key={msg._id} style={{borderTop:'1px solid #cecece', padding: '4px'}}>
-                        <small>
-                          To: {msg.data.to}
-                        </small>
-                        <br />
-                        {msg.data.content.data.text}
-                        <br />
-                        <small>
-                          {moment(msg.createdAt, 'x').fromNow()}
-                        </small>
-                      </div>
-                    )
-                  })
-                }
-              </div>
-            :
-              <div>
-                No sent messages
-              </div>
-          }
-          
-        </div>
-        
-      </div>
-      
-    )
-    
-  }
-  
-  renderReceiveMessagesPartial = () => {
-    
-    let PartialReceiveMessagesComponent = this.state.PartialReceiveMessagesComponent || window.ErrorComponent('PartialReceiveMessagesComponent');
-    
-    return (
-      
-      <div>
-        <PartialReceiveMessagesComponent
-          onSetupReceive={this.emitBrowserProxySetup}
-        />
-      </div>
-      
-    )
-    
-  }
-  
-  renderTransferPartial = () => {
-    
-    return (
-      
-      <div>
-        {/* Route Input/Buttons */}  
-        <div className="">
-        
-          {/* Desktop version */}  
-          <div className="is-hidden-touch">
-          
-            <div className="field is-horizontal">
-              <div className="field-label is-normal">
-                <label className="label">From</label>
-              </div>
-              <div className="field-body">
-  
-                <div className="field has-addons">
-                  <div className="control is-expanded">
-                    <input className="input" value={this.state.fromRouteHost} onChange={e=>this.setState({fromRouteHost:e.target.value})} placeholder="password/secret" />
-                  </div>
-                  <div className="control">
-                    <button className={"button is-default " + (this.state.gettingBalance[0] ? 'is-loading':'')} 
-                    onClick={e=>this.getBalance(0)}
-                    > Get Balance {this.state.balanceOf[0] ? `(${this.state.balanceOf[0]})`:''}</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="field is-horizontal">
-              <div className="field-label is-normal">
-                <label className="label">To</label>
-              </div>
-              <div className="field-body">
-  
-                <div className="field has-addons">
-                  <div className="control is-expanded">
-                    <input className="input" value={this.state.toRouteHost} onChange={e=>this.setState({toRouteHost:e.target.value})} placeholder="username" />
-                  </div>
-                  <div className="control">
-                    <button className={"button is-default " + (this.state.gettingBalance[1] ? 'is-loading':'')} 
-                    onClick={e=>this.getBalance(1)}
-                    > Get Balance {this.state.balanceOf[1] ? `(${this.state.balanceOf[1]})`:''}</button>
+      <section className="hero is-fullheight is-white has-background-info">
+        <div className="hero-body">
+          <div className="container">
+            <div className="columns is-centered">
+              <div className="column is-6">
+
+                <div className="box" style={{background:'white'}}>
+
+                  <h3 className="title is-5">
+                    Create Identity 
+                    <span style={{fontSize:'12px', fontWeight: 'normal'}}>
+                      &nbsp;&nbsp;&nbsp;({
+                        this.state.ownerNode ? 
+                        <span style={{}}>{this.state.ownerNode.data.username}</span>
+                        :
+                        <span style={{fontStyle:'italic'}}>none</span>
+                      })
+                    </span>
+                  </h3>
+                  <div className="field has-addons">
+                    <div className="control is-expanded">
+                      <input 
+                        className="input" 
+                        type="text" 
+                        placeholder="Username" 
+                        value={this.state.username} 
+                        onChange={this.handleChangeUsername} 
+                        onKeyDown={this.handleKeyDown} 
+                        autocorrect="off" 
+                        autocapitalize="none"
+                      />
+                    </div>
+                    <div className="control" style={this.state.checkedUsername ? {}:{display:'none'}}>
+                      <span className={"button is-default " + (this.state.checkingUsername ? 'is-loading ':'') + (((this.state.checkedUsername && !this.state.checkingUsername) ? (this.state.usernameAvailable ? 'is-success':'is-danger'):''))}>
+                        {
+                          this.state.usernameAvailable ? <span className="icon"><i className={"fas fa-check"}></i></span>:
+                          'X'
+                        }
+                      </span>
+                    </div>
+                    <div className="control" style={(!this.state.usernameAvailable && this.state.checkedUsername && !this.state.checkingUsername) ? {}:{display:'none'}}>
+                      <span className={"button is-default " + (this.state.isSearching ? 'is-loading ':'')} onClick={this.handleSearch}>
+                        Load Data
+                      </span>
+                    </div>
                   </div>
                   
-                </div>
-              </div>
-            </div>
-            
-            <div className="field is-horizontal">
-              <div className="field-label is-normal">
-                <label className="label">Amount</label>
-              </div>
-              <div className="field-body">
-  
-                <div className="field">
-                  <div className="control">
-                    <input className="input" value={this.state.transferAmount} onChange={e=>this.setState({transferAmount:e.target.value})} placeholder="Lumens (XLM)" />
+                  <div className="field has-addons">
+                    <div className="control is-expanded">
+                      <input className="input" type="password" placeholder="seed for locking" value={this.state.stellarSeed} onChange={e=>this.setState({stellarSeed:e.target.value})} onKeyDown={this.handleKeyDown} />
+                    </div>
+                    <div className="control" style={!this.state.stellarSeed ? {}:{display:'none'}}>
+                      <span className={"button is-default " + (this.state.generatingLumens ? 'is-loading ':'')} onClick={this.generateStellarSeed}>
+                        Create Test
+                      </span>
+                    </div>
                   </div>
-                  <p className="help">
-                    Use a small increment first to verify the transaction succeeds 
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            
-            <div className="field is-horizontal">
-              <div className="field-label is-normal">
-              </div>
-              <div className="field-body">
-  
-                <div className="field">
-                
-                  <div className="control">
-                    <button 
-                      className={"button is-primary " + (this.state.isTransferring ? 'is-loading':'')} 
-                      onClick={this.handleTransfer}
-                    >Add Route Funds</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              {
-                !this.state.failedTransfer ? '':
-                <span className='has-text-danger'>
-                  {this.state.failedTransfer}
-                </span>
-              }
-              &nbsp;
-            </div>
-            
-            
-              
-          </div>
-          
-        </div>
-        
-        <br />
-        
-        
-        <br />
-        
-        <div className="">
-        </div>
-        
-      </div>
-      
-    )
-    
-  }
-  
-  render(){
-    
-    return (<div>Home</div>)
-
-    // // Render Create (login) 
-    // if(!this.props.state.UsernamePassphraseNode){
-    //   return (<Create />)
-    // }
-
-    var hostUrl = window.location.protocol + "//" + window.location.host;
-    
-    return (
-  
-      <div className="section">
-        <div className="container">
-          <div className="columns">
-          
-            <div className="column is-6 is-offset-3">
-              
-              <div className="columns">
-                <div className="column is-9">
-                
-                
-                  <div className="title is-4">
-                    <span style={{opacity:'0.6',color:'#444'}}>
-                      {
-                        this.props.state.UsernamePassphraseNode.data.network == 'public' ? 
-                        ''
-                        :<span><span className="tag is-warning">test</span>&nbsp;</span>
-                      }
-                    </span>
-                    {this.props.state.UsernamePassphraseNode.data.username}
-                  </div>
-                  <div className="subtitle is-6">
-                    <strong>Passphrase: </strong>
-                    <span onClick={e=>{window.prompt('',this.props.state.UsernamePassphraseNode.data.passphrase)}}>{this.props.state.UsernamePassphraseNode.data.passphrase.substring(0,10)}...</span>
+                  
+                  <div className="field">
+                    <div className="control">
+                      <span className={"button is-info " + (this.state.claimingUsername ? 'is-loading':'')} onClick={this.handleClaimClick}>
+                        Claim Username and Save Identity 
+                      </span>
+                    </div>
                   </div>
                   {/*
-                  <div>
-                    <span>Storage: 0.5GB</span>
-                  </div>
-                  <div>
-                    <span>Routes: {this.state.routesRemaining}</span>
-                  </div>
-                  */}
-                
-                </div>
-                
-                {/*<div className="column is-3">
-                  <button className={"button is-info "} onClick={this.setupOrbitDb}>Setup Peer</button>
-                </div>
-                */}
-                <div className="column is-3 has-text-right">
-                  
-                  {/* status of ipfs */}
-                  <div 
-                    style={{display:'inline-block',width:'50px',height:'4px',backgroundColor:this.state.connectedColor}}
-                    onClick={this.checkIpfsConnected}
-                  >
-                    &nbsp;
-                  </div>
-                  
-                  <br />
-                    
-                  <div className="dropdown is-hoverable is-right has-text-left">
-                    <div className="dropdown-trigger">
-                      <button className="button is-default" aria-haspopup="true" aria-controls="dropdown-menu3">
-                        <span className="icon is-small">
-                          <i className="fas fa-angle-down" aria-hidden="true"></i>
-                        </span>
-                      </button>
+                  <div className="field">
+                    <div className="control">
+                      <a onClick={this.handlePurchaseClick}>
+                        Don't have a seed value for a username? 
+                      </a>
                     </div>
-                    <div className="dropdown-menu" id="dropdown-menu3" role="menu">
-                      <div className="dropdown-content">
-                        <a className="dropdown-item" onClick={()=>{window.UpdateApp()}}>
-                          Update
-                        </a>
-                        <a className="dropdown-item" onClick={e=>this.setState({tabsMainSelected:'transfer'})}>
-                          Fund Routes
-                        </a>
-                        <div className="dropdown-divider"></div>
-                        <a className="dropdown-item is-warning" onClick={this.logout}>
-                          Logout
-                        </a>
+                  </div>
+                */}
+                  
+                  <div>
+                    <div>
+                      {this.state.statusMsg}
+                    </div>
+                    <div>
+                      {this.state.purchaseInfo}
+                    </div>
+                  </div>
+
+                  {
+                    !this.state.dataValue ? '':
+                    <div>
+                      <br />
+                      <h3 className="title is-5">
+                        Data for Username
+                      </h3>
+                      <div>
+                        <pre><code>{this.state.dataValue}</code></pre>
                       </div>
                     </div>
-                  </div>
-                  
-                </div>
-                
-                  
-                
-              </div>
-              
-                    
-              <div className="tabs">
-                <ul>
-                  {
-                    this.state.tabsMainPossible.map(tab=>(
-                      <li key={tab[0]}
-                        onClick={e=>this.setState({tabsMainSelected:tab[0]})}
-                        className={(this.state.tabsMainSelected == tab[0]) ? 'is-active':''}
-                        ><a>{tab[1]}</a></li>
-                    ))
                   }
-                </ul>
+
+                </div>
               </div>
-              
-              {
-                this.state.tabsMainSelected != 'route' ? '':
-                this.renderRoutePartial()
-              }
-              
-              {
-                this.state.tabsMainSelected != 'send_message' ? '':
-                this.renderSendMessagePartial()
-              }
-              
-              {
-                this.state.tabsMainSelected != 'receive_messages' ? '':
-                this.renderReceiveMessagesPartial()
-              }
-              
-              {
-                this.state.tabsMainSelected != 'transfer' ? '':
-                this.renderTransferPartial()
-              }
-              
-              
-              
             </div>
-            
           </div>
-          
         </div>
-        
-      </div>
+      </section>
+    );
       
-      
-    )
   }
 }
+
 
  
 Home = GlobalState(Home);

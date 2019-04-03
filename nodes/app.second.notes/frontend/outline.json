@@ -1,0 +1,16 @@
+{
+  "name": "./src/components/layout",
+  "vars": {
+    "pageTitle": "Notes",
+    "loginComponent": {
+      "name": "./src/components/login",
+      "vars": {}
+    },
+    "mainComponent": {
+      "name": "./src/components/notes",
+      "vars": {
+        "title": "Deez Notes"
+      }
+    }
+  }
+}

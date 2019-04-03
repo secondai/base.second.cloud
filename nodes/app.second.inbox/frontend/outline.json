@@ -1,0 +1,16 @@
+{
+  "name" : "./src/components/layout",
+  "vars" : {
+    "pageTitle" : "Apps",
+    "title" : "Apps",
+    "loginComponent" :{
+      "name" : "./src/components/login",
+      "vars" : {}
+    },
+    "mainComponent": {
+      "name" : "./src/components/apps",
+      "vars" : {
+      }
+    }
+  }
+}

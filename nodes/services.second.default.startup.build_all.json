@@ -1,0 +1,12 @@
+{
+  "name": "base.second.cloud.services.second.default.startup.build_all",
+  "type": "types.second.default.service.js",
+  "data": {
+    "key": "caa31b79-0ffc-417a-b7cc-9ed5d61332a6",
+    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n  \n      console.log('--service:', SELF.name, '--', PATH, AUTH);\n      \n      let expectedBuildTypes = [\n        'types.second.default.app',\n        'types.second.default.code.js',\n        'types.second.default.service.js',\n        'types.second.default.permissions',\n        'types.second.default.route'\n      ];\n\n      // Run build for all paths that need it\n\t\t  const Op = universe.sharedServices.db.Sequelize.Op; \n      let whereQuery = {\n        type: {\n          [Op.in]: expectedBuildTypes\n        },\n        name: {\n          [Op.notLike]: 'base.%'\n        }\n      }\n\t\t  let nodes = await universe.sharedServices.db.Node.findAll({\n\t\t    where: whereQuery,\n\t\t    raw: true,\n\t\t  });\n\t\t  \n\t\t  let nodesToBuild = nodes.filter(n=>{\n\t\t    return (n.data && n.data.src)\n\t\t  });\n\t\t  \n\t\t  console.log('Nodes to build with (run build.buildOnInstall):', nodesToBuild.map(n=>n.name));\n      \n      // Build each path \n      \n      for(let node of nodesToBuild){\n        console.log('Building:', node.name);\n        await universe.execService('services.second.default.bin.build', {\n          actionPath: 'builtin.input',\n          inputNode: {\n            type: 'types.second.default.bin.install.build ',\n            data: {\n              nodePath: node.name,\n              target: 'onInstall',\n              opts: {\n                containerOrCode: 'all' // default: 'all'\n              }\n            }\n          },\n          isOwner: true\n        });\n      }\n\t\t  \n      \n      return resolve({\n        type: 'boolean:...',\n        data: true\n      });\n      \n        \n    }catch(err){\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
+  },
+  "blobdata": null,
+  "createdAt": "2019-04-03T21:35:08.645Z",
+  "updatedAt": "2019-04-03T21:35:08.645Z",
+  "nodes": []
+}

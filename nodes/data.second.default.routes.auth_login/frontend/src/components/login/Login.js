@@ -89,6 +89,8 @@ class Login extends Component {
                         onChange={e=>this.setState({passphrase:e.target.value})}
                         onKeyDown={this.handleKeyDown}
                         value={this.state.passphrase}
+                        autocorrect="off" 
+                        autocapitalize="none"
                       />
                     </div>
                     <div className="control">

@@ -1,0 +1,17 @@
+.row-item {
+	padding: 14px 8px;
+}
+.row-item:not(:last-child) {
+	border-bottom: 1px solid #ddd;
+}
+html,
+body {
+  position: fixed;
+  overflow: hidden;
+}
+body .mainwrapper {
+  width: 100vw;
+  height: 100vh;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch; /* enables “momentum” (smooth) scrolling */
+}

@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "second:dependencies:self": "yarn",
-    "second:build:self": "echo 'built'",
+    "second:dependencies": "yarn",
+    "second:build": "echo 'built'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

@@ -1,30 +1,16 @@
 {
-	"name" : "./layout",
-	"vars" : {
-		"childComponents":[{
-			"name_local" : "./left-right",
-			"name" : "second-component-react-left-right",
-			"vars" : {
-				"leftComponent":{
-					"name" : "./basic-text",
-					"vars" : {
-						"text": "this is the left"
-					}
-				},
-				"rightComponent":{
-					"name" : "./basic-text",
-					"name2" : "./basic-text",
-					"vars" : {
-						"text": "this is the right"
-					}
-				}
-			}
-		},{
-			"name" : "./basic-text",
-			"vars" : {
-				"text": "this is the below"
-			}
-		}],
-		"title":"Page Title Here"
-	}
+  "name" : "./src/components/layout",
+  "vars" : {
+    "pageTitle" : "Setup",
+    "title" : "Setup",
+    "loginComponent" :{
+      "name" : "./src/components/login",
+      "vars" : {}
+    },
+    "mainComponent": {
+      "name" : "./src/components/home",
+      "vars" : {
+      }
+    }
+  }
 }

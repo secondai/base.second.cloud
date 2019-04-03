@@ -8,7 +8,7 @@
       "vars" : {}
     },
     "mainComponent": {
-      "name" : "./src/components/apps",
+      "name" : "./src/components/main",
       "vars" : {
       }
     }

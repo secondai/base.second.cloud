@@ -14,6 +14,11 @@
           "lastBuiltCode": "2019-03-20T05:44:34.806Z",
           "buildOnInstall": true,
           "dependenciesCommand": "npm run second:dependencies:self"
+        },
+        "commands": {
+          "build": "npm run second:build",
+          "install": "npm run second:install",
+          "dependencies": "npm run second:dependencies"
         }
       },
       "frontend": {
@@ -27,6 +32,18 @@
           "lastBuiltCode": "2019-03-20T05:16:39.563Z",
           "buildOnInstall": false,
           "dependenciesCommand": "npm run second:dependencies:self"
+        },
+        "commands": {
+          "build": "npm run second:build",
+          "install": "npm run second:install",
+          "build-css": "npm run second:build-css",
+          "build-dev": "npm run second:build-dev",
+          "build-src": "npm run second:build-src",
+          "build-icons": "npm run second:build-icons",
+          "dependencies": "npm run second:dependencies",
+          "build-fromoutline": "npm run second:build-fromoutline",
+          "dependencies-upgrade": "npm run second:dependencies-upgrade",
+          "secondcomponents-upgrade": "npm run second:secondcomponents-upgrade"
         }
       }
     },
@@ -37,7 +54,7 @@
     "routes": {}
   },
   "blobdata": null,
-  "createdAt": "2019-03-20T23:52:57.361Z",
-  "updatedAt": "2019-03-27T08:23:30.019Z",
+  "createdAt": "2019-04-03T21:35:25.358Z",
+  "updatedAt": "2019-04-03T21:35:25.358Z",
   "nodes": []
 }

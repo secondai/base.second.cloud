@@ -5,6 +5,9 @@ import GlobalState from 'second-fe-react-hoc-globalstate';
 
 import './styles.css'
 
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+
+
 class Apps extends Component {
   static propTypes = {
   };
@@ -97,15 +100,13 @@ class Apps extends Component {
                   </h1>
 
                   {
-                    this.state.apps.map(app=>{
-                      return (
-                        <div className="row-item">
-                          <a href={'/app/' + app.name}>
-                            {app.name}
-                          </a>
-                        </div>
-                      )
-                    })
+                    this.state.apps.map((app,i)=>
+                      <div key={i} className="row-item">
+                        <Link to={'/view/' + app.name}>
+                          {app.name}
+                        </Link>
+                      </div>
+                    )
                   }
                   {
                     this.state.loading ? <span>Loading...</span>:''

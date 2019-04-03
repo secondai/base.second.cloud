@@ -1,0 +1,11 @@
+{
+  "name": "base.second.cloud.services.second.default.fs.get",
+  "type": "types.second.default.service.js",
+  "data": {
+    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      console.log('--Service --', SELF.name, '--');\n      \n      const fs = universe.require('fs-extra');\n      const path = universe.require('path');\n  \n      let response = {\n        type: 'types.second.default.binary_file_base64',\n        data: null\n      };\n      \n      let dataResult = fs.readFileSync(path.join(universe.env.ATTACHED_VOLUME_ROOT, PATH, INPUT.data.path));\n    \n      response.data = dataResult.toString('base64');\n      \n      return resolve(response);\n        \n    }catch(err){\n      universe.scriptError(err, SELF);\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
+  },
+  "blobdata": null,
+  "createdAt": "2019-04-03T21:35:07.622Z",
+  "updatedAt": "2019-04-03T21:35:07.622Z",
+  "nodes": []
+}
