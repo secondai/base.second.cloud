@@ -18,7 +18,7 @@ class AppOutline extends Component {
       appNode: null,
       outline: null,
       outlinePath: [],
-      isRunning: {}
+      commands: {}
     }
     
   }
@@ -107,18 +107,22 @@ class AppOutline extends Component {
     
     this.setState({
       loading: false,
-      outline: outlineJson,
-      originalOutline: JSON.stringify(outlineJson)
+      outlineJson: outlineJson,
+      outline: outlineJson.components,
+      originalOutline: JSON.stringify(outlineJson.components)
     });
   }
 
   saveOutline = async () => {
 
-    let { outline } = this.state;
+    let { 
+      outline,
+      outlineJson
+    } = this.state;
 
-    delete outline.vars.title2;
+    outlineJson.components = outline;
 
-    let outlineJson = JSON.stringify(outline,null,2);
+    let outlineStringified = JSON.stringify(outlineJson,null,2);
 
     this.setState({
       isSavingOutline: true
@@ -140,7 +144,7 @@ class AppOutline extends Component {
             type: 'types.second.default....',
             data: {
               path: 'frontend/outline.json',
-              text: outlineJson
+              text: outlineStringified
             }
           }
         }
@@ -150,13 +154,13 @@ class AppOutline extends Component {
     let putOutput = putJson.data;
     console.log('putOutput', putOutput);
 
-    let finalResponse = await window.handleStreamingResponse(putJson.data);
+    let { finalResponse, errors } = await window.handleStreamingResponse(putJson.data);
 
-    console.log('Saved respons:', finalResponse);
+    console.log('Saved respons:', finalResponse, errors);
 
     this.setState({
       isSavingOutline: false,
-      originalOutline: JSON.stringify(JSON.parse(outlineJson))
+      originalOutline: JSON.stringify(outline)
     });
 
   }
@@ -165,10 +169,12 @@ class AppOutline extends Component {
 
     let appName = this.state.appNode.name;
 
-    let isRunning = this.state.isRunning;
-    isRunning[command] = true;
+    let commands = this.state.commands;
+    commands[command] = commands[command] || {};
+    commands[command].isRunning = true;
+    commands[command].hasErrors = [];
     this.setState({
-      isRunning
+      commands
     })
 
     // This rebuilds the app 
@@ -210,16 +216,18 @@ class AppOutline extends Component {
 
     console.log('Build response:', json);
 
-    let finalResponse = await window.handleStreamingResponse(json.data);
+    let { finalResponse, errors } = await window.handleStreamingResponse(json.data);
 
-    isRunning = this.state.isRunning;
-    isRunning[command] = false;
+    commands = this.state.commands;
+    commands[command] = commands[command] || {};
+    commands[command].isRunning = false;
+    commands[command].hasErrors = errors;
     this.setState({
-      isRunning
+      commands
     })
 
     console.log('Built from outline');
-    console.log('Outline build response:', finalResponse);
+    console.log('Outline build response:', finalResponse, errors);
     return;
 
   }
@@ -305,47 +313,68 @@ class AppOutline extends Component {
       'second-components-react-left-right',
       './src/components/notes',
       './src/components/apps',
+      'second-fe-component-react-note-search-v1',
+      'second-fe-component-react-note-search-v2'
     ]
 
     return (
       <div>
-        Key: {['root'].concat(this.state.outlinePath).filter(p=>{return p != 'vars'}).join('.') || 'root'} 
-        &nbsp;&nbsp;
-        {
-          (backPath !== false) ? 
-          <span onClick={e=>this.updateOutlinePath(backPath)}>
-            [back]
-          </span>
-          :''
-        }
-        <br />
-        Component: {outlineObj.name} 
-        <div className="select">
-          <select value={this.state.componentValue} onChange={this.handleComponentChange}>
-            <option value={null} selected>Change Component</option>
-            {
-              components.map(c=>(
-                <option value={c}>{c}</option>
-              ))
-            }
-          </select>
+
+        <div>
+          {
+            (backPath !== false) ? 
+            <span className="button is-default" onClick={e=>this.updateOutlinePath(backPath)}>
+              &lt;&lt; Back
+            </span>
+            :
+            <span className="button" style={{opacity: '0.00001'}}>
+              &nbsp;
+            </span>
+          }
         </div>
+
+
+        <div className="var-item" style={{background:'#ededed'}}>
+          <span>
+            <strong>Key:</strong> {['root'].concat(this.state.outlinePath).filter(p=>{return p != 'vars'}).join('.') || 'root'} 
+          </span>
+        </div>
+        
+
+        <div className="var-item">
+          <strong>Component:</strong> {outlineObj.name} 
+        </div>
+
+        <div style={{paddingLeft:'4px'}}>
+          <div className="select">
+            <select value={this.state.componentValue} onChange={this.handleComponentChange}>
+              <option value={null} selected>Change Component</option>
+              {
+                components.map(c=>(
+                  <option value={c}>{c}</option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+
         <br />
-        Vars: {
+
+        {
           Object.keys(outlineObj.vars || {}).map(vk=>{
             let theVar = outlineObj.vars[vk];
             let newPath = this.state.outlinePath.concat(['vars',vk]);
             if(vk.indexOf('Component') > -1){
               return (
-                <div key={vk} onClick={e=>this.updateOutlinePath(newPath)}>
-                  &nbsp;&nbsp;&nbsp;&nbsp;<strong>{vk}:</strong> {theVar ? theVar.name : '(none)'}
+                <div key={vk} onClick={e=>this.updateOutlinePath(newPath)} className="var-item">
+                  <strong>{vk}:</strong> <span>{theVar ? theVar.name : '(none)'}</span>
                 </div>
               )
 
             } else {
               return (
-                <div key={vk} onClick={e=>this.updateVarVal(newPath)}>
-                  &nbsp;&nbsp;&nbsp;&nbsp;<strong>{vk}:</strong> {JSON.stringify(theVar)}
+                <div key={vk} onClick={e=>this.updateVarVal(newPath)} className="var-item">
+                  <strong>{vk}:</strong> {JSON.stringify(theVar)}
                 </div>
               )
             }
@@ -365,6 +394,30 @@ class AppOutline extends Component {
 
     let needsSave = (this.state.originalOutline != JSON.stringify(this.state.outline)) ? true:false
 
+    var getCommand = (command) => {
+      return this.state.commands[command] || {isRunning: false, hasErrors: [] }
+    }
+
+    let runButtons = [
+      {
+        name: 'Rebuild',
+        command: 'build-src-and-outline'
+      },
+      {
+        name: 'Upgrade Second Components',
+        command: 'secondcomponents-upgrade'
+      },
+      {
+        name: 'Install Deps',
+        command: 'dependencies'
+      },
+      {
+        name: 'Upgrade Deps',
+        command: 'dependencies-upgrade'
+      },
+
+    ]
+
     return (
       <section className="hero is-fullheight is-white has-background-info">
         <div className="hero-body">
@@ -375,35 +428,34 @@ class AppOutline extends Component {
                 <div className="box" style={{background:'white'}}>
 
                   <h1 className="title" onClick={this.fetchApp} style={{borderBottom:'2px solid #ddd', paddingBottom:'24px'}}>
-                    Outline: {app.name}
+                    {app.name}
                   </h1>
 
+                  <div className="buttons">
 
-                  &nbsp;
+                    <a className="button is-info" href={'/app/' + app.name} target="_blank">
+                      Visit App
+                    </a>
 
-                  <button className={"button " + (this.state.isRunning['build-src-and-outline'] ? 'is-loading':'')} onClick={e=>this.triggerAppRun('build-src-and-outline')}>
-                    Rebuild
-                  </button>
 
-                  &nbsp;
+                    <button className={"button" + (needsSave ? ' is-success':'') + (this.state.isSavingOutline ? ' is-loading':'')} onClick={this.saveOutline}>
+                      Save Outline
+                    </button>
 
-                  <button className={"button" + (needsSave ? ' is-success':'') + (this.state.isSavingOutline ? ' is-loading':'')} onClick={this.saveOutline}>
-                    Save Outline
-                  </button>
 
-                  &nbsp;
+                    {
+                      runButtons.map(button=>(
+                        <button 
+                          key={button.name} 
+                          className={"button " + (getCommand(button.command).isRunning ? 'is-loading':'') + (getCommand(button.command).hasErrors.length ? 'is-danger':'')} 
+                          onClick={e=>this.triggerAppRun(button.command)}>
+                          {button.name}
+                        </button>
+                      ))
+                    }
 
-                  <button className={"button " + (this.state.isRunning['dependencies'] ? 'is-loading':'')} onClick={e=>this.triggerAppRun('dependencies')}>
-                    Install Pkgs
-                  </button>
+                  </div>
 
-                  &nbsp;
-
-                  <button className={"button " + (this.state.isRunning['secondcomponents-upgrade'] ? 'is-loading':'')} onClick={e=>this.triggerAppRun('secondcomponents-upgrade')}>
-                    Upgrade Pkgs
-                  </button>
-
-                  &nbsp;
 
 
                   {

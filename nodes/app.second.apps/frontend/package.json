@@ -27,7 +27,7 @@
     "second:build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/",
     "second:build-icons": "generate-icons -c ffffff --icon src/media/icon.png --output public/img/icons/",
     "second:build-src": "react-scripts build",
-    "second:build-fromoutline": "second-cli build-frontend . --auto-outline --auto-install-missing --skip",
+    "second:build-fromoutline": "second-cli build-frontend . --auto-outline --auto-add-missing --skip",
     "second:build-dev": "NODE_ENV=development react-scripts build",
     "second:dependencies": "yarn install",
     "second:dependencies-upgrade": "yarn upgrade",

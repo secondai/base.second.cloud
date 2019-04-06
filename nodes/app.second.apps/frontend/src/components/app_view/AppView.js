@@ -71,6 +71,11 @@ class AppView extends Component {
 
   handleDuplicate = async () => {
 
+    if(!this.state.copyable){
+      window.alert('Unable to duplicate app');
+      return;
+    }
+
     let app = this.props.app;
 
     let fromName = this.state.appNode.name;
@@ -280,7 +285,7 @@ class AppView extends Component {
 
     console.log('Build response:', json);
 
-    let finalResponse = await window.handleStreamingResponse(json.data);
+    let { finalResponse, errors } = await window.handleStreamingResponse(json.data);
 
     this.setState({
       isBuilding: false
@@ -311,33 +316,25 @@ class AppView extends Component {
                     {app.name}
                   </h1>
 
+                  <div className="buttons">
 
-                  <a className="button is-primary" href={'/app/' + app.name} target="_blank">
-                    Visit App
-                  </a>
+                    <a className="button is-info" href={'/app/' + app.name} target="_blank">
+                      Visit App
+                    </a>
 
+                    <button className={"button " + (this.state.isBuilding ? 'is-loading':'')} onClick={e=>this.triggerAppBuild(app.name)}>
+                      Install
+                    </button>
 
-                  &nbsp;
+                    <Link className="button" to={'/outline/' + app.name}>
+                      View Outline
+                    </Link>
 
-                  {
-                    this.state.copyable ? 
                     <button className="button" onClick={this.handleDuplicate}>
                       Duplicate App
                     </button>
-                    :''
-                  }
 
-                  &nbsp;
-
-                  <button className={"button " + (this.state.isBuilding ? 'is-loading':'')} onClick={e=>this.triggerAppBuild(app.name)}>
-                    Rebuild
-                  </button>
-
-                  &nbsp;
-
-                  <Link className="button" to={'/outline/' + app.name}>
-                    View Outline
-                  </Link>
+                  </div>
 
 
 

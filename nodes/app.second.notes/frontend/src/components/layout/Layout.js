@@ -125,7 +125,7 @@ class Layout extends Component {
               <this.props.mainComponent />:
               <this.props.loginComponent />
             :
-              <section className="hero is-fullheight is-white has-background-info">
+              <section className="hero is-fullheight is-white has-background-primary">
                 <div className="hero-body">
                   <div className="container">
                     <div className="columns is-centered">

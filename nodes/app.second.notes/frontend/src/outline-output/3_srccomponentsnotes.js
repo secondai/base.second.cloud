@@ -4,6 +4,7 @@
 
       let propsObj = {
           title : "Deez Notes",
+          searchComponent : require('./4_secondfecomponentreactnotesearchv').default,
       }
 
       class SrcComponentsNotesComponentImport extends React.Component {

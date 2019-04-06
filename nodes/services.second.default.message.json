@@ -1,0 +1,11 @@
+{
+  "name": "base.second.cloud.services.second.default.message",
+  "type": "types.second.default.service.js",
+  "data": {
+    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      console.log('--Service:', SELF.name, '--', PATH);\n      \n      let doneCanWipe;\n      universe.wipeFunc = new Promise(resolve=>{\n        doneCanWipe = resolve;\n      });\n      \n      // Respond immediately \n      resolve();\n      \n      // Strip and save data \n  \t\tlet nodeToSave = {\n  \t\t  type: INPUT.type,\n  \t\t  data: INPUT.data,\n  \t\t}\n      \n      // save incoming message to list \n\t\t\tlet savedNode = await universe.execService('services.second.default.put_to_list', {\n        actionPath: 'data.second.messages.message_list',\n        inputNode: nodeToSave,\n        isOwner: true\n\t\t\t});\n\t\t\t\n\t\t\tconsole.log('New Message Saved Node:', savedNode);\n\t\t\t\n\t\t\t// Notify user \n\t\t\t// - triggers the \"notify user\" service? \n\t\t\t// - should check against a master list, etc. \n\t\t\tlet notifyNode = await universe.execService('services.second.default.notify', {\n        actionPath: savedNode.name,\n        inputNode: nodeToSave,\n        isOwner: true\n\t\t\t});\n      \n      // done processing \n      doneCanWipe();\n        \n        \n    }catch(err){\n      console.error('Error:', SELF._path, err);\n      resolve({\n        type: 'types.second.default.error',\n        data: {\n          message: err.toString()\n        }\n      });\n    }\n    \n    \n  })\n})()"
+  },
+  "blobdata": null,
+  "createdAt": "2019-04-06T03:53:59.186Z",
+  "updatedAt": "2019-04-06T03:53:59.186Z",
+  "nodes": []
+}

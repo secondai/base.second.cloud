@@ -4057,9 +4057,9 @@ ee-first@1.1.1:
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
 electron-to-chromium@^1.3.103, electron-to-chromium@^1.3.122:
-  version "1.3.122"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.122.tgz#b32a0805f48557bd3c3b8104eadc7fa511b14a9a"
-  integrity sha512-3RKoIyCN4DhP2dsmleuFvpJAIDOseWH88wFYBzb22CSwoFDSWRc4UAMfrtc9h8nBdJjTNIN3rogChgOy6eFInw==
+  version "1.3.124"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.124.tgz#861fc0148748a11b3e5ccebdf8b795ff513fa11f"
+  integrity sha512-glecGr/kFdfeXUHOHAWvGcXrxNU+1wSO/t5B23tT1dtlvYB26GY8aHzZSWD7HqhqC800Lr+w/hQul6C5AF542w==
 
 elliptic@^6.0.0:
   version "6.4.1"
@@ -5801,9 +5801,9 @@ ini@^1.3.5, ini@~1.3.0:
   integrity sha512-RZY5huIKCMRWDUqZlEi72f/lmXKMvuszcMBduliQ3nnWbx9X/ZBQO7DijMEYS9EhHBb2qacRUMtC7svLwe0lcw==
 
 inline-style-prefixer@^5.0.3:
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/inline-style-prefixer/-/inline-style-prefixer-5.0.4.tgz#828b7e6c6b906233262b593315a8defdf0b21662"
-  integrity sha512-I9wbfqETNhMfULOGf1v2AK3bLr5zlBOftDQ22gUUebkP2gMD0EjogKsaH03J6JXYD9i4uklUpPGjcU0ebvKnig==
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/inline-style-prefixer/-/inline-style-prefixer-5.1.0.tgz#cb63195f9456dcda25cf59743e45c4d9815b0811"
+  integrity sha512-giteQHPMrApQOSjNSjteO5ZGSGMRf9gas14fRy2lg2buSc1nRnj6o6xuNds5cMTKrkncyrTu3gJn/yflFMVdmg==
   dependencies:
     css-in-js-utils "^2.0.0"
 
@@ -6754,9 +6754,9 @@ js-tokens@^3.0.2:
   integrity sha1-mGbfOVECEw449/mWvOtlRDIJwls=
 
 js-yaml@^3.12.0, js-yaml@^3.13.0, js-yaml@^3.4.2, js-yaml@^3.7.0, js-yaml@^3.9.0:
-  version "3.13.0"
-  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.13.0.tgz#38ee7178ac0eea2c97ff6d96fff4b18c7d8cf98e"
-  integrity sha512-pZZoSxcCYco+DIKBTimr67J6Hy+EYGZDY/HCWC+iAEA9h1ByhMXAIVUXMcMFpOCxQ/xjXmPI2MkDL5HRm5eFrQ==
+  version "3.13.1"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.13.1.tgz#aff151b30bfdfa8e49e05da22e7415e9dfa37847"
+  integrity sha512-YfbcO7jXDdyj0DGxYVSlSeQNHbD7XPWvrVWeVUujrQEoZzWJIRrCPoyk6kL6IAjAG2IolMK4T0hNUe0HOUs5Jw==
   dependencies:
     argparse "^1.0.7"
     esprima "^4.0.0"
@@ -7395,7 +7395,12 @@ miller-rabin@^4.0.0:
     bn.js "^4.0.0"
     brorand "^1.0.1"
 
-"mime-db@>= 1.38.0 < 2", mime-db@~1.38.0:
+"mime-db@>= 1.38.0 < 2":
+  version "1.39.0"
+  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.39.0.tgz#f95a20275742f7d2ad0429acfe40f4233543780e"
+  integrity sha512-DTsrw/iWVvwHH+9Otxccdyy0Tgiil6TWK/xhfARJZF/QFhwOgZgOIvA2/VIGpM8U7Q8z5nDmdDWC6tuVMJNibw==
+
+mime-db@~1.38.0:
   version "1.38.0"
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.38.0.tgz#1a2aab16da9eb167b49c6e4df2d9c68d63d8e2ad"
   integrity sha512-bqVioMFFzc2awcdJZIzR3HjZFX20QhilVS7hytkKrv7xFAn8bM1gzc/FOX2awLISvWe0PV8ptFKcon+wZ5qYkg==
@@ -7418,9 +7423,9 @@ mime@^1.3.4:
   integrity sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==
 
 mime@^2.0.3, mime@^2.3.1:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/mime/-/mime-2.4.0.tgz#e051fd881358585f3279df333fe694da0bcffdd6"
-  integrity sha512-ikBcWwyqXQSHKtciCcctu9YfPbFYZ4+gbHEmE0Q8jzcTYQg5dHCr3g2wwAZjPoJfQVXZq6KXAjpXOTf5/cjT7w==
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/mime/-/mime-2.4.1.tgz#19eb7357bebbda37df585b14038347721558c715"
+  integrity sha512-VRUfmQO0rCd3hKwBymAn3kxYzBHr3I/wdVMywgG3HhXOwrCQgN84ZagpdTm2tZ4TNtwsSmyJWYO88mb5XvzGqQ==
 
 mimic-fn@^1.0.0:
   version "1.2.0"
@@ -10094,9 +10099,9 @@ scss-tokenizer@^0.2.3:
     source-map "^0.4.2"
 
 second-cli@^1.0.5:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/second-cli/-/second-cli-1.0.9.tgz#44e68bb49fa84733a8dbee7bcccff2ffa600eb41"
-  integrity sha512-VRUjD5cN4s7ycosV5iu9BaS8197xKntvY1kcvmeT6F/GPyJSo0P//QQuOFZo9AZfNJ4tcoPVqWyO06bRrN0z7w==
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/second-cli/-/second-cli-1.0.11.tgz#8bd74a341244dc5b932878a794e4c832e19edfb6"
+  integrity sha512-36/iNU8CkdXJLKb/mKrUGswnEGF09ipkp9+zyDlZLADDfvs4uA159CnA7UAdorIgWASQbAqjY0iZcI03JIHR8Q==
   dependencies:
     axios "^0.18.0"
     chokidar "2.1.2"
@@ -10118,7 +10123,23 @@ second-component-react-left-right@^1.0.2:
   dependencies:
     prop-types "15.7.2"
 
-second-fe-react-hoc-globalstate@^1.0.0:
+second-fe-component-react-note-search-v1@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/second-fe-component-react-note-search-v1/-/second-fe-component-react-note-search-v1-1.0.0.tgz#5559f06884ed905d8efb3be0b847fe86463d4522"
+  integrity sha512-NPx9DiMjIpn3LeVE3sGM3dnpq4Lx0YkYN18eXJoXtigiH2Wh54GFvNxGPV37J/89pLI8JuSQ+CXfUsXq8twP+A==
+  dependencies:
+    prop-types "15.7.2"
+    second-fe-react-hoc-globalstate "1.0.0"
+
+second-fe-component-react-note-search-v2@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/second-fe-component-react-note-search-v2/-/second-fe-component-react-note-search-v2-1.0.1.tgz#b493291fc26f3934f7687c9f0f02891d9df83557"
+  integrity sha512-xfanNXtP7UQ1zPtx73Ks4Tba2JA2rO5i5WpWx+cUTIEbuPhtc4NPyly9gAXSYfePssVztTsGToKEipayYMsQ4w==
+  dependencies:
+    prop-types "15.7.2"
+    second-fe-react-hoc-globalstate "1.0.0"
+
+second-fe-react-hoc-globalstate@1.0.0, second-fe-react-hoc-globalstate@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/second-fe-react-hoc-globalstate/-/second-fe-react-hoc-globalstate-1.0.0.tgz#df7e3f313142e921b9525181f78a81802d9e5754"
   integrity sha512-q0JM+d5t+CTPFTN79AEYrHbIX0Ysj6aIXbvJYafbgBxRKQW4kU4QQdidhYEw5af+5Wc+7JboCycI2euiBsATYw==
@@ -10789,9 +10810,9 @@ supports-color@^6.1.0:
     has-flag "^3.0.0"
 
 svgo@^1.0.0, svgo@^1.1.1:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/svgo/-/svgo-1.2.0.tgz#305a8fc0f4f9710828c65039bb93d5793225ffc3"
-  integrity sha512-xBfxJxfk4UeVN8asec9jNxHiv3UAMv/ujwBWGYvQhhMb2u3YTGKkiybPcLFDLq7GLLWE9wa73e0/m8L5nTzQbw==
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/svgo/-/svgo-1.2.1.tgz#3fedde75a4016193e1c2608b5fdef6f3e4a9fd99"
+  integrity sha512-Y1+LyT4/y1ms4/0yxPMSlvx6dIbgklE9w8CIOnfeoFGB74MEkq8inSfEr6NhocTaFbyYp0a1dvNgRKGRmEBlzA==
   dependencies:
     chalk "^2.4.1"
     coa "^2.0.2"
@@ -10800,7 +10821,7 @@ svgo@^1.0.0, svgo@^1.1.1:
     css-tree "1.0.0-alpha.28"
     css-url-regex "^1.1.0"
     csso "^3.5.1"
-    js-yaml "^3.12.0"
+    js-yaml "^3.13.0"
     mkdirp "~0.5.1"
     object.values "^1.1.0"
     sax "~1.2.4"

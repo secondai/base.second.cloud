@@ -2,10 +2,10 @@
   "name": "base.second.cloud.data.second.default.routes.api_get.code",
   "type": "types.second.default.code.js",
   "data": {
-    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      console.log('--incoming_route_handler: /api/get --');\n      \n      // This is just temporary! \n      \n      let bodyNode = INPUT.data.req.body;\n      \n      console.log('bodyNode:', bodyNode);\n      \n  \t\t// expecting an _id! \n  \t\t\n  \t\tif(!bodyNode.name){\n        await universe.httpResponse('send', false);\n  \t\t  return false;\n  \t\t}\n  \t\t\n  \t\t// run execService \n      let node = await universe.getNodeAtPath(bodyNode.name);\n      \n      // delete node.nodes;\n      console.log('NODE:', node);\n      \n      let response = universe.cJSON.stringify(node)\n\t\t\t\n      await universe.httpResponse('send', response);\n      \n      return resolve(true);\n        \n        \n    }catch(err){\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
+    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      console.log('--incoming_route_handler: /api/get --');\n      \n      // This is just temporary! \n      \n      let bodyNode = INPUT.data.req.body;\n      \n      // console.log('bodyNode:', bodyNode);\n      \n  \t\t// expecting an _id! \n  \t\t\n  \t\tif(!bodyNode.name){\n        await universe.httpResponse('send', false);\n  \t\t  return false;\n  \t\t}\n  \t\t\n  \t\t// run execService \n      let node = await universe.getNodeAtPath(bodyNode.name);\n      \n      // delete node.nodes;\n      // console.log('NODE:', node);\n      \n      let response = universe.cJSON.stringify(node)\n\t\t\t\n      await universe.httpResponse('send', response);\n      \n      return resolve(true);\n        \n        \n    }catch(err){\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
   },
   "blobdata": null,
   "createdAt": "2019-03-27T08:23:11.015Z",
-  "updatedAt": "2019-04-03T21:34:52.810Z",
+  "updatedAt": "2019-04-06T03:55:22.970Z",
   "nodes": []
 }

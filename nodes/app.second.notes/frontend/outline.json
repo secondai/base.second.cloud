@@ -1,15 +1,22 @@
 {
-  "name": "./src/components/layout",
-  "vars": {
-    "pageTitle": "Notes",
-    "loginComponent": {
-      "name": "./src/components/login",
-      "vars": {}
-    },
-    "mainComponent": {
-      "name": "./src/components/notes",
-      "vars": {
-        "title": "Deez Notes"
+  "version": "1.0",
+  "components": {
+    "name": "./src/components/layout",
+    "vars": {
+      "pageTitle": "Notes",
+      "loginComponent": {
+        "name": "./src/components/login",
+        "vars": {}
+      },
+      "mainComponent": {
+        "name": "./src/components/notes",
+        "vars": {
+          "title": "Deez Notes",
+          "searchComponent": {
+            "name": "second-fe-component-react-note-search-v1",
+            "vars": {}
+          }
+        }
       }
     }
   }

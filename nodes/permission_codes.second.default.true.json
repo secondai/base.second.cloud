@@ -2,10 +2,10 @@
   "name": "base.second.cloud.permission_codes.second.default.true",
   "type": "types.second.default.permissions",
   "data": {
-    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      // console.log('-- RUNNING PERMISSION CHECK --');\n      console.log('Running PermissionsCode', SELF._path);\n      \n      return resolve(true);\n      \n        \n        \n    }catch(err){\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
+    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n      \n      // console.log('-- RUNNING PERMISSION CHECK --');\n      // console.log('Running PermissionsCode', SELF.name);\n      \n      return resolve(true);\n      \n        \n        \n    }catch(err){\n      resolve({ERROR: true, err: err.toString()});\n    }\n    \n    \n  })\n})()"
   },
   "blobdata": null,
   "createdAt": "2019-03-20T23:53:30.413Z",
-  "updatedAt": "2019-03-20T23:53:30.413Z",
+  "updatedAt": "2019-04-06T03:33:35.110Z",
   "nodes": []
 }

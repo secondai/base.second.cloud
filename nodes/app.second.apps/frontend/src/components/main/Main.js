@@ -23,6 +23,7 @@ window.handleStreamingResponse = async (responseNode) => {
   let streamId = responseNode.data.streamId;
 
   let finalResponse = null;
+  let errors = [];
 
   // is a streaming response 
   let lastIdx = 0;
@@ -31,6 +32,7 @@ window.handleStreamingResponse = async (responseNode) => {
       let streamUpdateResponse;
       let lastEntry;
       let streamArray;
+      let streamArrayNode;
       try {
         streamUpdateResponse = await fetch('/ai',{
           method: 'POST',
@@ -55,9 +57,18 @@ window.handleStreamingResponse = async (responseNode) => {
             }
           })
         });
+
         let jsonResponse = await streamUpdateResponse.json();
         console.log('streaming update response:', jsonResponse);
-        streamArray = jsonResponse.data.data;
+        streamArrayNode = jsonResponse.data;
+        streamArray = streamArrayNode.data;
+
+        if(streamArrayNode.type.indexOf('error') > -1){
+          finalResponse = streamArrayNode;
+          errors.push(streamArrayNode);
+          resolve();
+          return;
+        }
 
         console.log('new entries from array:', streamArray);
 
@@ -66,7 +77,21 @@ window.handleStreamingResponse = async (responseNode) => {
       }catch(err){
         // failed
         console.error('Failed request (timeout?)');
+        setTimeout(()=>{
+          checkAgain().then(resolve);
+        }, 5 * 1000)
+        return;
       }
+
+      // iterate through, looking for errors 
+      streamArray.forEach(arrEntry=>{
+        console.log('stream:', arrEntry);
+        if(arrEntry.type == 'update-exit' &&
+           arrEntry.data &&
+           arrEntry.data.code != 0){
+          errors.push(arrEntry);
+        }
+      })
 
       if(lastEntry && lastEntry.type == 'complete'){
         console.log('Completed streaming response!');
@@ -83,7 +108,10 @@ window.handleStreamingResponse = async (responseNode) => {
   }
   await checkAgain();
 
-  return finalResponse;
+  return {
+    finalResponse,
+    errors
+  }
 
 }
 

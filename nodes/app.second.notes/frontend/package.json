@@ -16,6 +16,8 @@
     "react-scripts": "2.1.8",
     "second-cli": "^1.0.5",
     "second-component-react-left-right": "^1.0.2",
+    "second-fe-component-react-note-search-v1": "^1.0.0",
+    "second-fe-component-react-note-search-v2": "^1.0.1",
     "second-fe-react-hoc-globalstate": "^1.0.0"
   },
   "scripts": {
@@ -24,8 +26,8 @@
     "second:build-css": "node-sass-chokidar --include-path ./src --include-path ./node_modules src/ -o src/",
     "second:build-icons": "./node_modules/.bin/generate-icons -c ffffff --icon src/media/icon.png --output public/img/icons/",
     "second:build-src": "react-scripts build",
-    "second:build-fromoutline": "second-cli build-frontend . --auto-outline --auto-install-missing --skip",
-    "second:build-src-and-outline": "second-cli build-frontend . --auto-outline --auto-build-source --auto-install-missing --skip",
+    "second:build-fromoutline": "second-cli build-frontend . --auto-outline --auto-add-missing --skip",
+    "second:build-src-and-outline": "second-cli build-frontend . --auto-outline --auto-build-source --auto-add-missing --skip",
     "second:build-dev": "NODE_ENV=development react-scripts build",
     "second:dependencies": "yarn",
     "second:dependencies-upgrade": "yarn upgrade",

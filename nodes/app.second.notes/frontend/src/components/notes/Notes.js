@@ -7,14 +7,17 @@ import './styles.css'
 
 class Apps extends Component {
   static propTypes = {
-    title: PropTypes.string
+    title: PropTypes.string,
+    searchComponent: PropTypes.func
   };
 
   constructor(props){
     super(props);
     
     this.state = {
-      notes: []
+      notes: [],
+      filteredNotes: [],
+      searchStr: ''
     }
     
   }
@@ -75,19 +78,84 @@ class Apps extends Component {
     this.setState({
       notes, 
       loading:false
-    })
+    }, this.updateFilter)
     
   }
 
   createNote = async () => {
     // create note here 
+
+    let name = Date.now();
+    let title = window.prompt('Title:','');
+    if(!title){
+      return false;
+    }
+
+    let noteNode = {
+      type: 'types.second.default.note',
+      data: {
+        title,
+        text: ''
+      }
+    }
+
+    const rawResponse = await fetch('/ai', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: 'types.second.default.request.input',
+        data: {
+          auth: {
+            token: window.localStorage.getItem('token')
+          },
+          serviceName: 'services.second.default.put_to_list', // name will get created! 
+          actionPath: 'data.second.notes.note_list',
+          inputNode: noteNode,
+          extras: {}
+        }
+      })
+    });
+    const nodeResponse = await rawResponse.json(); // should be returned in data?
+
+    await this.fetchNotes();
+
+  }
+
+  handleSearch = async (searchStr) => {
+    // filter nodes 
+    this.setState({
+      searchStr
+    }, this.updateFilter);
+
+  }
+
+  updateFilter = () => {
+    let searchStr = this.state.searchStr.toLowerCase();
+
+    let notes = this.state.notes.filter(note=>{
+      let title = note.data.title || '';
+      let text = note.data.text || '';
+      if(title.toLowerCase().indexOf(searchStr) > -1 || 
+        text.toLowerCase().indexOf(searchStr) > -1){
+        return true;
+      }
+    });
+
+    this.setState({
+      filteredNotes: notes
+    });
   }
 
   render(){
-    console.log('Apps props:', this.props);
+    console.log('Apps props:', this.props, this.state);
+
+    let filteredNotes = this.state.filteredNotes;
     
     return (
-      <section className="hero is-fullheight is-white has-background-info">
+      <section className="hero is-fullheight is-white has-background-primary">
         <div className="hero-body">
           <div className="container">
             <div className="columns is-centered">
@@ -97,15 +165,30 @@ class Apps extends Component {
 
                   <h1 className="title" onClick={this.fetchApps} style={{borderBottom:'2px solid #ddd', paddingBottom:'24px'}}>
                     {this.props.title || 'No Note Title'}
+
+                    <button className="button is-success is-pulled-right" onClick={this.createNote}>
+                      <span className="icon">
+                        <i className="fas fa-plus"></i>
+                      </span>
+                    </button>
+
                   </h1>
 
+
                   {
-                    this.state.notes.map(note=>{
+                    this.props.searchComponent ? 
+                    <this.props.searchComponent
+                      onSearch={this.handleSearch}
+                    />:''
+                  }
+
+                  {
+                    filteredNotes.map(note=>{
                       return (
                         <div className="row-item">
-                          <a>
-                            {note.name}
-                          </a>
+                          <div>
+                            {note.data.title}
+                          </div>
                         </div>
                       )
                     })
@@ -113,7 +196,7 @@ class Apps extends Component {
                   {
                     this.state.loading ? 
                     <span>Loading...</span>:
-                    this.state.notes.length ? '':
+                    filteredNotes.length ? '':
                     <div>
                       No Notes
                     </div>
