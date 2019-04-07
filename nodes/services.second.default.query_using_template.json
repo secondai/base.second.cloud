@@ -1,0 +1,11 @@
+{
+  "name": "base.second.cloud.services.second.default.query_using_template",
+  "type": "types.second.default.service.js",
+  "data": {
+    "code": "(()=>{\n  return new Promise(async (resolve, reject)=>{\n    try {\n    \n      console.log('--Service:', SELF.name, '--', PATH);\n      \n      // Run a SELECT statement using a named template \n      // - replace values simplistically \n      \n      let Handlebars = universe.require('handlebars');\n      \n      let templatePath = PATH;\n      let replacements = INPUT.data.replacements || {};\n      \n      let templateNode = await universe.getNodeAtPath(templatePath);\n      \n      let templateCompiled = Handlebars.compile(templateNode.data.query);\n      \n      let templateSQL = templateCompiled(replacements);\n      \n    //   console.log('FINDING');\n\t\t  // let nodes = await universe.sharedServices.db.Node.findAll({\n\t\t  //   where: {\n\t\t  //     data: true\n\t\t  //   },\n\t\t  //   raw: true,\n\t\t  // });\n      \n      console.log('templateSQL:', templateSQL);\n      \n\t\t  const Op = universe.sharedServices.db.Sequelize.Op;\n\t\t  const sequelize = universe.sharedServices.db.sequelize;\n\t\t  \n      // template usually defines (makes clear) what we're doing with the sequelize query \n      let sqlResponse = await sequelize.query(templateSQL,{\n        raw: true,\n        // replacements // TODO: sanitize, restrict (words only, etc) \n      });\n      \n      let results = sqlResponse[0];\n      let metadata = sqlResponse[1];\n      \n      let returnResult = {\n        type: 'array_of_messages',\n        data: results\n      };\n      \n      return resolve(returnResult);\n        \n    }catch(err){\n      console.error('Error:', SELF._path, err);\n      resolve({\n        type: 'types.second.default.error',\n        data: {\n          message: err.toString()\n        }\n      });\n    }\n    \n    \n  })\n})()"
+  },
+  "blobdata": null,
+  "createdAt": "2019-04-07T06:39:51.150Z",
+  "updatedAt": "2019-04-07T06:39:51.150Z",
+  "nodes": []
+}

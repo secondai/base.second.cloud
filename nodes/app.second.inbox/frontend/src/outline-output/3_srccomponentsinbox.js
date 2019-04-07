@@ -1,18 +1,18 @@
 
       let React = require('react');
-      let SrcComponentsAppsComponent = require('../components/apps/Apps.js').default;
+      let SrcComponentsInboxComponent = require('../components/inbox/Inbox.js').default;
 
       let propsObj = {
       }
 
-      class SrcComponentsAppsComponentImport extends React.Component {
+      class SrcComponentsInboxComponentImport extends React.Component {
         constructor(props){
           super(props)
           this.state = {}
         }
         render(){
           return (
-            <SrcComponentsAppsComponent
+            <SrcComponentsInboxComponent
               {...this.props}
               {...propsObj}
             />
@@ -20,5 +20,5 @@
         }
       }
 
-      export default SrcComponentsAppsComponentImport;
+      export default SrcComponentsInboxComponentImport;
       

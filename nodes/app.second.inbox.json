@@ -42,7 +42,9 @@
           "build-icons": "npm run second:build-icons",
           "dependencies": "npm run second:dependencies",
           "build-fromoutline": "npm run second:build-fromoutline",
-          "dependencies-upgrade": "npm run second:dependencies-upgrade"
+          "dependencies-upgrade": "npm run second:dependencies-upgrade",
+          "build-src-and-outline": "npm run second:build-src-and-outline",
+          "secondcomponents-upgrade": "npm run second:secondcomponents-upgrade"
         }
       }
     },
@@ -53,7 +55,7 @@
     "routes": {}
   },
   "blobdata": null,
-  "createdAt": "2019-04-03T21:35:25.053Z",
-  "updatedAt": "2019-04-06T03:53:50.153Z",
+  "createdAt": "2019-04-07T06:16:37.667Z",
+  "updatedAt": "2019-04-07T06:16:37.667Z",
   "nodes": []
 }

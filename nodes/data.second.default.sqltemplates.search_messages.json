@@ -1,0 +1,11 @@
+{
+  "name": "base.second.cloud.data.second.default.sqltemplates.search_messages",
+  "type": "types.second.default.sql_template",
+  "data": {
+    "query": "SELECT \n  Node.name as name,\n  Node.data as data,\n  Node.\"createdAt\" as \"createdAt\",\n  subnode.name as \"nodes.name\",\n  subnode.data as \"nodes.data\",\n  subnode.\"createdAt\" as \"nodes.createdAt\"\n\tFROM nodes as Node\n\t\tINNER JOIN nodes subnode \n\t\t\tON subnode.name ~ (Node.name || '.starred')\n\t\t\t   AND subnode.data = 'true'\n\tWHERE Node.name ~ '^{{{LISTPATH}}}.[-\\w]+$'\n\t"
+  },
+  "blobdata": null,
+  "createdAt": "2019-04-07T06:39:16.417Z",
+  "updatedAt": "2019-04-07T06:39:16.417Z",
+  "nodes": []
+}

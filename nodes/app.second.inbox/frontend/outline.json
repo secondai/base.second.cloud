@@ -1,15 +1,18 @@
 {
-  "name" : "./src/components/layout",
-  "vars" : {
-    "pageTitle" : "Apps",
-    "title" : "Apps",
-    "loginComponent" :{
-      "name" : "./src/components/login",
-      "vars" : {}
-    },
-    "mainComponent": {
-      "name" : "./src/components/apps",
-      "vars" : {
+  "version": "0.0.1",
+  "components": {
+    "name" : "./src/components/layout",
+    "vars" : {
+      "pageTitle" : "Inbox",
+      "title" : "Inbox",
+      "loginComponent" :{
+        "name" : "./src/components/login",
+        "vars" : {}
+      },
+      "mainComponent": {
+        "name" : "./src/components/inbox",
+        "vars" : {
+        }
       }
     }
   }

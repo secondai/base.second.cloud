@@ -3,10 +3,10 @@
       let SrcComponentsLayoutComponent = require('../components/layout/Layout.js').default;
 
       let propsObj = {
-          pageTitle : "Apps",
-          title : "Apps",
+          pageTitle : "Inbox",
+          title : "Inbox",
           loginComponent : require('./2_srccomponentslogin').default,
-          mainComponent : require('./3_srccomponentsapps').default,
+          mainComponent : require('./3_srccomponentsinbox').default,
       }
 
       class SrcComponentsLayoutComponentImport extends React.Component {

@@ -5,7 +5,7 @@ import GlobalState from 'second-fe-react-hoc-globalstate';
 
 import './styles.css'
 
-class Apps extends Component {
+class Inbox extends Component {
   static propTypes = {
   };
 
@@ -13,30 +13,17 @@ class Apps extends Component {
     super(props);
     
     this.state = {
-      urlVal: 'github.com/secondai/app.second.sample_install',
-      apps: [],
+      messages: [],
       loading: true
     }
     
   }
   
   componentDidMount(){
-    this.fetchApps();
+    this.fetchMessages();
   }
 
-  fetchApps = async () => {
-    
-    // let response = await fetch('/api/get_for_pattern',{
-    //   method: 'POST',
-    //   headers: {
-    //     'Accept': 'application/json',
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({
-    //     pattern: 'app.*.*',
-    //     excludeData: true
-    //   })
-    // });
+  fetchMessages = async () => {
 
     const rawResponse = await fetch('/ai', {
       method: 'POST',
@@ -50,14 +37,13 @@ class Apps extends Component {
           auth: {
             token: window.localStorage.getItem('token')
           },
-          serviceName: 'services.second.default.get_for_pattern',
-          actionPath: 'builtin-input',
+          serviceName: 'services.second.default.query_using_template',
+          actionPath: 'sqltemplates.second.default.search_messages',
           inputNode: {
             type: '...',
             data: {
-              pattern: 'app.*.*',
-              opts: {
-                excludeData: true
+              replacements: {
+                LISTPATH: 'data.second.messages.message_list'
               }
             }
           },
@@ -70,18 +56,18 @@ class Apps extends Component {
     // response.data, nodelist.data = array 
     let nodes = nodeResponse.data.data;
 
-    console.log('Nodes/Apps:', nodes);
+    console.log('Nodes/messages:', nodes);
     // return false;
     
     this.setState({
-      apps: nodes, 
+      messages: nodes, 
       loading:false
     })
     
   }
 
   render(){
-    console.log('Apps props:', this.props);
+    console.log('Inbox props:', this.props);
     
     return (
       <section className="hero is-fullheight is-white has-background-info">
@@ -92,16 +78,16 @@ class Apps extends Component {
 
                 <div className="box" style={{background:'white'}}>
 
-                  <h1 className="title" onClick={this.fetchApps} style={{borderBottom:'2px solid #ddd', paddingBottom:'24px'}}>
-                    Apps
+                  <h1 className="title" onClick={this.fetchMessages} style={{borderBottom:'2px solid #ddd', paddingBottom:'24px'}}>
+                    Messages
                   </h1>
 
                   {
-                    this.state.apps.map(app=>{
+                    this.state.messages.map(message=>{
                       return (
                         <div className="row-item">
-                          <a href={'/app/' + app.name} target="_blank">
-                            {app.name}
+                          <a href={'/message/' + message.name} target="_blank">
+                            {message.name}
                           </a>
                         </div>
                       )
@@ -122,6 +108,6 @@ class Apps extends Component {
   }
 }
 
-Apps = GlobalState(Apps);
+Inbox = GlobalState(Inbox);
 
-export default Apps;
+export default Inbox;
